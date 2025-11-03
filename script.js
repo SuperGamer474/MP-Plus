@@ -63,11 +63,6 @@
         cols.appendChild(c2);
         p.appendChild(cols);
 
-        const f = document.createElement('div');
-        f.style.cssText = 'margin-top:8px;font-size:11px;opacity:.85;';
-        f.textContent = 'Drag header to move. X to close.';
-        p.appendChild(f);
-
         document.body.appendChild(p);
 
         speedrunner(startBtn, stopBtn);
