@@ -41,6 +41,7 @@
         const c2 = column();
         const startBtn = btn('Start Speedrunner', '#16a34a', '#fff');
         const stopBtn = btn('Stop Speedrunner', '#ef4444', '#fff');
+        stopBtn.style.marginBottom = '12px';
         c1.appendChild(startBtn);
         c1.appendChild(stopBtn);
         const enableBtn = btn('Enable Right Click', '#16a34a', '#fff');
@@ -48,9 +49,9 @@
         c2.appendChild(enableBtn);
         c2.appendChild(disableBtn);
         const calcBtn = btn('Open Calculator', '#0ea5a4', '#fff');
-        const openAiBtn = btn('Open AI', '#0ea5a4', '#fff');
-        openAiBtn.style.marginBottom = '12px';
         c1.appendChild(calcBtn);
+        // NEW: Open AI button (same color/style as calculator)
+        const openAiBtn = btn('Open AI', '#0ea5a4', '#fff');
         c1.appendChild(openAiBtn);
         cols.appendChild(c1);
         cols.appendChild(c2);
@@ -60,7 +61,7 @@
         rightClick(enableBtn, disableBtn);
         draggable(p, h);
         calcBtn.onclick = () => openCalculator();
-        openAiBtn.onclick = () => openOpenAI();
+        openAiBtn.onclick = () => openOpenAI(); // hook up new button
     }
     function column() {
         const d = document.createElement('div');
@@ -286,6 +287,7 @@
             panel.style.zIndex = 2147483648;
         });
     }
+    // NEW: Open AI panel that embeds the given URL in an iframe, same header & size as calculator
     function openOpenAI() {
         const existingPanel = document.getElementById('mp-openai-panel');
         if (existingPanel) {
@@ -307,7 +309,7 @@
             background:#2b2f33;color:#fff;padding:8px 10px;cursor:grab;
             font-weight:700;font-size:13px;
         `;
-        header.innerHTML = `<span style="pointer-events:none;">AI Chat</span>`;
+        header.innerHTML = `<span style="pointer-events:none;">Open AI</span>`;
         const headerBtns = document.createElement('div');
         headerBtns.style.cssText = 'display:flex;gap:6px;align-items:center;';
         const closeBtn = document.createElement('button');
@@ -326,13 +328,14 @@
             width:100%;height:calc(100% - 42px);padding:0;box-sizing:border-box;
             background:transparent;display:flex;flex-direction:column;
         `;
+        // iframe that embeds the requested page
         const iframe = document.createElement('iframe');
         iframe.src = 'https://supergamer474.github.io/cerebras-web/';
         iframe.style.cssText = 'width:100%;height:100%;border:0;display:block;';
-        iframe.setAttribute('title', 'AI Chat Embed');
+        iframe.setAttribute('title', 'Open AI Embed');
+        // allow fullscreen & basic features
         iframe.setAttribute('allowfullscreen', '');
         iframe.setAttribute('loading', 'lazy');
-        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads');
         body.appendChild(iframe);
         panel.appendChild(body);
         document.body.appendChild(panel);
