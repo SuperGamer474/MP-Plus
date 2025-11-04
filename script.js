@@ -6,7 +6,6 @@
         }
         createPanel();
     };
-
     function createPanel() {
         const p = document.createElement('div');
         p.id = 'mp-tools-panel';
@@ -16,14 +15,12 @@
             box-shadow:0 8px 32px rgba(2,6,23,.7);font-family:Arial,Helvetica,sans-serif;
             font-size:13px;box-sizing:border-box;user-select:none;
         `;
-
         const h = document.createElement('div');
         h.style.cssText = `
             font-weight:700;margin-bottom:8px;display:flex;
             justify-content:space-between;align-items:center;cursor:grab;
         `;
         h.textContent = 'MP Tools';
-
         const x = document.createElement('button');
         x.textContent = 'X';
         x.title = 'Close';
@@ -34,57 +31,42 @@
         x.onclick = () => p.remove();
         h.appendChild(x);
         p.appendChild(h);
-
         const i = document.createElement('div');
         i.textContent = 'Choose a tool:';
         i.style.marginBottom = '8px';
         p.appendChild(i);
-
         const cols = document.createElement('div');
         cols.style.cssText = 'display:flex;gap:10px;';
-
         const c1 = column();
         const c2 = column();
-
         const startBtn = btn('Start Speedrunner', '#16a34a', '#fff');
-        const stopBtn  = btn('Stop Speedrunner',  '#ef4444', '#fff');
-        stopBtn.style.marginBottom = '12px';
-
+        const stopBtn = btn('Stop Speedrunner', '#ef4444', '#fff');
         c1.appendChild(startBtn);
         c1.appendChild(stopBtn);
-
         const enableBtn = btn('Enable Right Click', '#16a34a', '#fff');
         const disableBtn = btn('Disable Right Click', '#ef4444', '#fff');
         c2.appendChild(enableBtn);
         c2.appendChild(disableBtn);
-
         const calcBtn = btn('Open Calculator', '#0ea5a4', '#fff');
-        c1.appendChild(calcBtn);
-
-        // NEW: Open AI button (same color/style as calculator)
         const openAiBtn = btn('Open AI', '#0ea5a4', '#fff');
+        openAiBtn.style.marginBottom = '12px';
+        c1.appendChild(calcBtn);
         c1.appendChild(openAiBtn);
-
         cols.appendChild(c1);
         cols.appendChild(c2);
         p.appendChild(cols);
-
         document.body.appendChild(p);
-
         speedrunner(startBtn, stopBtn);
         rightClick(enableBtn, disableBtn);
         draggable(p, h);
-
         calcBtn.onclick = () => openCalculator();
-        openAiBtn.onclick = () => openOpenAI(); // hook up new button
+        openAiBtn.onclick = () => openOpenAI();
     }
-
     function column() {
         const d = document.createElement('div');
         d.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:8px;';
         return d;
     }
-
     function btn(text, bg, fg) {
         const b = document.createElement('button');
         b.textContent = text;
@@ -95,13 +77,11 @@
         `;
         return b;
     }
-
     function speedrunner(start, stop) {
         start.onclick = async function () {
             if (window.__autoClickerRunning) return console.log('Speedrunner already running');
             window.__autoClickerStopRequested = false;
             window.__autoClickerRunning = true;
-
             const wait = (sel, txt, to = 10000) => new Promise((res, rej) => {
                 const s = Date.now();
                 const iv = setInterval(() => {
@@ -110,9 +90,7 @@
                     if (Date.now() - s > to) { clearInterval(iv); rej(new Error('Timeout: ' + txt)); }
                 }, 200);
             });
-
             const sleep = ms => new Promise(r => setTimeout(r, ms));
-
             try {
                 while (!window.__autoClickerStopRequested) {
                     try {
@@ -128,14 +106,12 @@
                 console.log('Speedrunner stopped');
             }
         };
-
         stop.onclick = () => {
             window.__autoClickerStopRequested = true;
             window.__autoClickerRunning = false;
             console.log('Stop requested');
         };
     }
-
     function rightClick(enable, disable) {
         enable.onclick = function () {
             if (window.__allowRClickInterval) return console.log('Already running');
@@ -155,7 +131,6 @@
             window.__allowRClickInterval = setInterval(purge, 50);
             console.log('Right-click unblocker ON');
         };
-
         disable.onclick = function () {
             if (window.__allowRClickInterval) clearInterval(window.__allowRClickInterval);
             if (window.__allowRClick_installed && window.__allowRClick_handler) {
@@ -170,7 +145,6 @@
             console.log('Right-click unblocker OFF');
         };
     }
-
     function openCalculator() {
         const existingPanel = document.getElementById('mp-desmos-panel');
         if (existingPanel) {
@@ -178,7 +152,6 @@
             existingPanel.style.zIndex = 2147483648;
             return;
         }
-
         const panel = document.createElement('div');
         panel.id = 'mp-desmos-panel';
         panel.style.cssText = `
@@ -187,7 +160,6 @@
             box-shadow:0 8px 30px rgba(0,0,0,.4);font-family:Arial,Helvetica,sans-serif;
             box-sizing:border-box;user-select:none;padding:0;overflow:hidden;
         `;
-
         const header = document.createElement('div');
         header.style.cssText = `
             display:flex;align-items:center;justify-content:space-between;
@@ -197,7 +169,6 @@
         header.innerHTML = `<span style="pointer-events:none;">Calculator</span>`;
         const headerBtns = document.createElement('div');
         headerBtns.style.cssText = 'display:flex;gap:6px;align-items:center;';
-
         const closeBtn = document.createElement('button');
         closeBtn.title = 'Close';
         closeBtn.textContent = '✕';
@@ -208,21 +179,18 @@
         headerBtns.appendChild(closeBtn);
         header.appendChild(headerBtns);
         panel.appendChild(header);
-
         const body = document.createElement('div');
         body.id = 'mp-desmos-body';
         body.style.cssText = `
             width:100%;height:calc(100% - 42px);padding:8px;box-sizing:border-box;
             background:transparent;
         `;
-
         const desmosContainer = document.createElement('div');
         desmosContainer.id = 'scientificCalc';
         desmosContainer.style.cssText = 'width:100%;height:100%;border-radius:6px;overflow:hidden;';
         body.appendChild(desmosContainer);
         panel.appendChild(body);
         document.body.appendChild(panel);
-
         if (typeof draggable === 'function') {
             draggable(panel, header);
         } else {
@@ -233,7 +201,7 @@
                     const y = (e.clientY !== undefined) ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY);
                     if (!dragging || x == null) return;
                     panel.style.left = (x - ox) + 'px';
-                    panel.style.top  = (y - oy) + 'px';
+                    panel.style.top = (y - oy) + 'px';
                     panel.style.right = '';
                 };
                 const up = () => {
@@ -267,7 +235,6 @@
                 });
             })();
         }
-
         closeBtn.onclick = () => {
             try {
                 if (window.__mp_desmos_instance && typeof window.__mp_desmos_instance.destroy === 'function') {
@@ -277,7 +244,6 @@
             window.__mp_desmos_instance = null;
             panel.remove();
         };
-
         function ensureDesmos() {
             if (window.Desmos) return Promise.resolve();
             if (window.__mp_desmos_loading_promise) return window.__mp_desmos_loading_promise;
@@ -291,7 +257,6 @@
             });
             return window.__mp_desmos_loading_promise;
         }
-
         function initDesmos() {
             try {
                 if (!document.getElementById('scientificCalc')) {
@@ -310,7 +275,6 @@
                 console.error('Error initialising Desmos', err);
             }
         }
-
         ensureDesmos().then(initDesmos).catch(err => {
             console.error('Failed to load Desmos calculator:', err);
             const errNotice = document.createElement('div');
@@ -318,13 +282,10 @@
             errNotice.textContent = 'Desmos failed to load.';
             body.appendChild(errNotice);
         });
-
         panel.addEventListener('mousedown', () => {
             panel.style.zIndex = 2147483648;
         });
     }
-
-    // NEW: Open AI panel that embeds the given URL in an iframe, same header & size as calculator
     function openOpenAI() {
         const existingPanel = document.getElementById('mp-openai-panel');
         if (existingPanel) {
@@ -332,7 +293,6 @@
             existingPanel.style.zIndex = 2147483648;
             return;
         }
-
         const panel = document.createElement('div');
         panel.id = 'mp-openai-panel';
         panel.style.cssText = `
@@ -341,17 +301,15 @@
             box-shadow:0 8px 30px rgba(0,0,0,.4);font-family:Arial,Helvetica,sans-serif;
             box-sizing:border-box;user-select:none;padding:0;overflow:hidden;
         `;
-
         const header = document.createElement('div');
         header.style.cssText = `
             display:flex;align-items:center;justify-content:space-between;
             background:#2b2f33;color:#fff;padding:8px 10px;cursor:grab;
             font-weight:700;font-size:13px;
         `;
-        header.innerHTML = `<span style="pointer-events:none;">Open AI</span>`;
+        header.innerHTML = `<span style="pointer-events:none;">AI Chat</span>`;
         const headerBtns = document.createElement('div');
         headerBtns.style.cssText = 'display:flex;gap:6px;align-items:center;';
-
         const closeBtn = document.createElement('button');
         closeBtn.title = 'Close';
         closeBtn.textContent = '✕';
@@ -362,27 +320,22 @@
         headerBtns.appendChild(closeBtn);
         header.appendChild(headerBtns);
         panel.appendChild(header);
-
         const body = document.createElement('div');
         body.id = 'mp-openai-body';
         body.style.cssText = `
             width:100%;height:calc(100% - 42px);padding:0;box-sizing:border-box;
             background:transparent;display:flex;flex-direction:column;
         `;
-
-        // iframe that embeds the requested page
         const iframe = document.createElement('iframe');
         iframe.src = 'https://supergamer474.github.io/cerebras-web/';
         iframe.style.cssText = 'width:100%;height:100%;border:0;display:block;';
-        iframe.setAttribute('title', 'Open AI Embed');
-        // allow fullscreen & basic features
+        iframe.setAttribute('title', 'AI Chat Embed');
         iframe.setAttribute('allowfullscreen', '');
         iframe.setAttribute('loading', 'lazy');
-
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads');
         body.appendChild(iframe);
         panel.appendChild(body);
         document.body.appendChild(panel);
-
         if (typeof draggable === 'function') {
             draggable(panel, header);
         } else {
@@ -393,7 +346,7 @@
                     const y = (e.clientY !== undefined) ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY);
                     if (!dragging || x == null) return;
                     panel.style.left = (x - ox) + 'px';
-                    panel.style.top  = (y - oy) + 'px';
+                    panel.style.top = (y - oy) + 'px';
                     panel.style.right = '';
                 };
                 const up = () => {
@@ -427,16 +380,13 @@
                 });
             })();
         }
-
         closeBtn.onclick = () => {
             panel.remove();
         };
-
         panel.addEventListener('mousedown', () => {
             panel.style.zIndex = 2147483648;
         });
     }
-
     function draggable(panel, handle) {
         let dragging = false, ox = 0, oy = 0;
         const move = e => {
@@ -444,7 +394,7 @@
             const y = (e.clientY !== undefined) ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY);
             if (!dragging || x == null) return;
             panel.style.left = (x - ox) + 'px';
-            panel.style.top  = (y - oy) + 'px';
+            panel.style.top = (y - oy) + 'px';
             panel.style.right = '';
         };
         const up = () => {
