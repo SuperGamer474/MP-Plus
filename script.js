@@ -42,11 +42,11 @@
         const startBtn = btn('Start Speedrunner', '#16a34a', '#fff');
         const stopBtn = btn('Stop Speedrunner', '#ef4444', '#fff');
         stopBtn.style.marginBottom = '12px';
-        startBtn.style.marginBottom = '12px';
         c1.appendChild(startBtn);
         c1.appendChild(stopBtn);
         const enableBtn = btn('Enable Right Click', '#16a34a', '#fff');
         const disableBtn = btn('Disable Right Click', '#ef4444', '#fff');
+        disableBtn.style.marginBottom = '12px';
         c2.appendChild(enableBtn);
         c2.appendChild(disableBtn);
         const calcBtn = btn('Open Calculator', '#0ea5a4', '#fff');
