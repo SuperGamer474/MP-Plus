@@ -42,6 +42,7 @@
         const startBtn = btn('Start Speedrunner', '#16a34a', '#fff');
         const stopBtn = btn('Stop Speedrunner', '#ef4444', '#fff');
         stopBtn.style.marginBottom = '12px';
+        startBtn.style.marginBottom = '12px';
         c1.appendChild(startBtn);
         c1.appendChild(stopBtn);
         const enableBtn = btn('Enable Right Click', '#16a34a', '#fff');
