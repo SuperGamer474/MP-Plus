@@ -1854,7 +1854,7 @@ function handleFileUpload(e) {
             };
             reader.readAsText(file);
         } else {
-            alert(\`File type not supported: ${file.type}\`);
+            alert(\`File type not supported: \\\${file.type}\`);
             filesProcessed++;
             if (filesProcessed === files.length) {
                 if (elements.promptEditor) elements.promptEditor.contentEditable = "true";
