@@ -58,10 +58,10 @@
         c2.appendChild(enableBtn);
         c2.appendChild(disableBtn);
         
-        const calcBtn = btn('Open Calculator', '#0ea5a4', '#fff');
+        const calcBtn = btn('Calculator', '#0ea5a4', '#fff');
         c1.appendChild(calcBtn);
         
-        const openAiBtn = btn('Open AI', '#0ea5a4', '#fff');
+        const openAiBtn = btn('AI Chat', '#0ea5a4', '#fff');
         c2.appendChild(openAiBtn);
         
         cols.appendChild(c1);
