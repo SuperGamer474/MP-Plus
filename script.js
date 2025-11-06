@@ -776,36 +776,33 @@
         // helper: inject HTML and execute scripts inside it
         // -------------------------
         function injectContent(targetElement, htmlString) {
-            // put raw HTML into container
-            targetElement.innerHTML = htmlString;
-
-            // find any <script> tags and re-run them properly
-            // (innerHTML doesn't execute inline scripts, so we recreate them)
-            const scripts = Array.from(targetElement.querySelectorAll('script'));
-            for (const oldScript of scripts) {
-                const newScript = document.createElement('script');
-
-                // copy attributes (type, src, async, etc)
-                for (const attr of oldScript.attributes) {
-                    newScript.setAttribute(attr.name, attr.value);
-                }
-
-                if (oldScript.src) {
-                    // external script: set src and append so it loads and executes
-                    newScript.src = oldScript.src;
-                    // preserve async/defer if present
-                    if (oldScript.async) newScript.async = oldScript.async;
-                    if (oldScript.defer) newScript.defer = oldScript.defer;
-                    // append and wait (optional) — we just append
-                    oldScript.parentNode.replaceChild(newScript, oldScript);
-                } else {
-                    // inline script: copy the text content so it runs
-                    newScript.textContent = oldScript.textContent;
-                    oldScript.parentNode.replaceChild(newScript, oldScript);
-                }
+          targetElement.innerHTML = htmlString;
+          const scripts = Array.from(targetElement.querySelectorAll('script'));
+          for (const oldScript of scripts) {
+            try {
+              const newScript = document.createElement('script');
+              for (let i = 0; i < oldScript.attributes.length; i++) {
+                const attr = oldScript.attributes[i];
+                newScript.setAttribute(attr.name, attr.value);
+              }
+              newScript.async = !!oldScript.async;
+              newScript.defer = !!oldScript.defer;
+              if (oldScript.type) newScript.type = oldScript.type;
+              if (oldScript.src) {
+                oldScript.parentNode.insertBefore(newScript, oldScript);
+                newScript.src = oldScript.src;
+                oldScript.parentNode.removeChild(oldScript);
+              } else {
+                newScript.text = oldScript.textContent || oldScript.innerHTML || '';
+                oldScript.parentNode.insertBefore(newScript, oldScript);
+                oldScript.parentNode.removeChild(oldScript);
+              }
+            } catch (err) {
+              try { oldScript.parentNode.removeChild(oldScript); } catch (_) {}
+              console.error('injectContent: failed to re-run script', err);
             }
+          }
         }
-    }
     function draggable(panel, handle) {
         let dragging = false, ox = 0, oy = 0;
         const move = e => {
