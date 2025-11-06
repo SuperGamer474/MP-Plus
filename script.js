@@ -337,7 +337,7 @@
         const header = document.createElement('div');
         header.style.cssText = `
             display:flex;align-items:center;justify-content:space-between;
-            background:#121416;color:#fff;padding:8px 10px;cursor:grab;
+            background:#2b2f33;color:#fff;padding:8px 10px;cursor:grab;
             font-weight:700;font-size:13px;
         `;
         header.innerHTML = `<span class="mp-header-title" style="pointer-events:none;">${title}</span>`;
