@@ -100,7 +100,7 @@
                         (await wait('div.next-button.ph3.pv2.card-button.round-button.bottom-button.left-button.flex.items-center.mr2',
                                     'Complete question')).click();
                         await sleep(3000);
-                    } catch { await sleep(1000); }
+                    } catch (e) { await sleep(1000); }
                 }
             } finally {
                 window.__autoClickerRunning = false;
@@ -298,7 +298,6 @@
     flex-direction: column;
     height: 100vh;
   }
-
   .chat-container {
     flex: 1;
     display: flex;
@@ -307,7 +306,6 @@
     gap: 8px;
     overflow-y: auto;
   }
-
   .message {
     max-width: 74%;
     padding: 10px 14px;
@@ -318,21 +316,18 @@
     white-space: pre-wrap;
     font-size: 14px;
   }
-
   .from-user {
     align-self: flex-end;
     background: linear-gradient(180deg,#0b84ff,#0066d6);
     color: #fff;
     border-bottom-right-radius: 6px;
   }
-
   .from-other {
     align-self: flex-start;
     background: #e6e9ee;
     color: #111;
     border-bottom-left-radius: 6px;
   }
-
   .chat-input {
     display: flex;
     gap: 8px;
@@ -341,7 +336,6 @@
     background: #fff;
     align-items: flex-end;
   }
-
   .chat-input textarea {
     flex: 1;
     min-height: 44px;
@@ -354,7 +348,6 @@
     outline: none;
     line-height: 1.3;
   }
-
   .controls {
     display:flex;
     flex-direction:column;
@@ -362,7 +355,6 @@
     align-items:flex-end;
     justify-content:space-between;
   }
-
   .chat-input button {
     background: #0078ff;
     color: #fff;
@@ -372,7 +364,6 @@
     cursor: pointer;
     font-weight: 600;
   }
-
   .chat-input button:active { transform: translateY(1px); }
   .small-btn {
     background: #f3f4f6;
@@ -384,11 +375,9 @@
     font-size: 12px;
   }
 </style>
-
 <div class="chat-container" id="chat">
   <!-- intentionally empty at start -->
 </div>
-
 <div class="chat-input">
   <textarea id="msgInput" placeholder="Type a message"></textarea>
   <div class="controls">
@@ -398,27 +387,22 @@
     </div>
   </div>
 </div>
-
 <script>
 (function () {
   // ---------- CONFIG (edit here) ----------
   const API_KEY = 'csk-nhykr5xjwe495twcvtx383wh3vnyj2n4x9nr26k56mje6jxr'; // put your key here
   const ENDPOINT = 'https://api.cerebras.ai/v1/chat/completions';
   const MODEL = 'gpt-oss-120b';
-
   // Hidden system message (JS-only, not shown in chat)
   const SYSTEM_MESSAGE = "You are a friendly chatbot called MP Helper. You help with maths problems. MP stands for Math Pathways, as this is the program you are in. NEVER respond with math displaystyles or markdown, ONLY respond with either plaintext. NEVER use displaystyle or math format or markdown. You are a part of MP Tools, a tool system for Math Pathways. For example, INSTEAD of doing this: (1 div 1 = 1), do THIS: 1/1 = 1 NEVER use math formatter. So, NEVER use LaTeX-style display math, instead always write math in plain text.";
-
   // ---------- in-memory memory (cleared on reload) ----------
   let messages = []; // {role: 'user'|'assistant', content: '...'}
   let currentController = null;
-
   // ---------- DOM ----------
   const chat = document.getElementById('chat');
   const input = document.getElementById('msgInput');
   const sendBtn = document.getElementById('sendBtn');
   const stopBtn = document.getElementById('stopBtn');
-
   // helpers
   function makeBubble(text, cls) {
     const d = document.createElement('div');
@@ -438,24 +422,20 @@
     }
     scrollToBottom();
   }
-
   // Send user message & stream AI response
   async function sendMessage() {
     const raw = input.value.replace(/\\u00A0/g, ' ');
     const text = raw.trim();
     if (!text) return;
-
     // append user message
     const userMsg = { role: 'user', content: text };
     messages.push(userMsg);
     chat.appendChild(makeBubble(text, 'from-user'));
     input.value = '';
     scrollToBottom();
-
     // start streaming assistant response
     await streamAssistantResponse();
   }
-
   function abortCurrentStream() {
     if (currentController) {
       try { currentController.abort(); } catch(e) {}
@@ -463,7 +443,6 @@
       stopBtn.style.display = 'none';
     }
   }
-
   // Robust streaming parser for Cerebras streaming shape (choices[0].delta.content)
   async function streamAssistantResponse() {
     // Build payload messages: hidden system first
@@ -471,20 +450,17 @@
       { role: 'system', content: SYSTEM_MESSAGE },
       ...messages.map(m => ({ role: m.role, content: m.content }))
     ];
-
     // Add placeholder assistant message to memory and UI
     const assistantPlaceholder = { role: 'assistant', content: '' };
     messages.push(assistantPlaceholder);
     const assistantBubble = makeBubble('', 'from-other');
     chat.appendChild(assistantBubble);
     scrollToBottom();
-
     // abort previous
     abortCurrentStream();
     const controller = new AbortController();
     currentController = controller;
     stopBtn.style.display = 'inline-block';
-
     try {
       console.log('Starting fetch to', ENDPOINT);
       console.log('Payload:', JSON.stringify({
@@ -496,7 +472,6 @@
           reasoning_effort: 'low',
           messages: payloadMessages
         }, null, 2));
-
       const resp = await fetch(ENDPOINT, {
         method: 'POST',
         headers: {
@@ -514,26 +489,21 @@
         }),
         signal: controller.signal
       });
-
       console.log('Fetch response status:', resp.status, 'OK:', resp.ok);
-
       if (!resp.ok) {
         const txt = await resp.text();
         console.error('API error text:', txt);
         throw new Error('API error: ' + resp.status + ' — ' + txt);
       }
-
       const reader = resp.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
-
       // Append incoming token string to assistant bubble
       function appendToAssistant(str) {
         assistantPlaceholder.content += str;
         assistantBubble.textContent = assistantPlaceholder.content;
         scrollToBottom();
       }
-
       let done = false;
       while (!done) {
         const { value, done: streamDone } = await reader.read();
@@ -544,12 +514,10 @@
         const chunk = decoder.decode(value, { stream: true });
         console.log('Received chunk:', chunk);
         buffer += chunk;
-
         // split into lines (handles both SSE "data: ..." and JSON-lines)
         const lines = buffer.split(/\r?\n/);
         // keep last partial
         buffer = lines.pop() || '';
-
         for (let rawLine of lines) {
           rawLine = rawLine.trim();
           if (!rawLine) continue;
@@ -559,15 +527,14 @@
           if (rawLine.startsWith('data:')) {
             payload = rawLine.slice(5).trim();
             console.log('SSE payload:', payload);
-            if (payload === '[DONE]') { 
-              done = true; 
+            if (payload === '[DONE]') {
+              done = true;
               console.log('Received [DONE]');
-              break; 
+              break;
             }
           } else {
             payload = rawLine;
           }
-
           // try parse JSON payload
           try {
             const parsed = JSON.parse(payload);
@@ -603,7 +570,6 @@
           }
         } // end for lines
       } // end while
-
       // mark stream finished
       currentController = null;
       stopBtn.style.display = 'none';
@@ -627,11 +593,9 @@
       }
     }
   }
-
   // ---------- Events ----------
   sendBtn.addEventListener('click', sendMessage);
   stopBtn.addEventListener('click', () => abortCurrentStream());
-
   // Key handling: Shift+Enter = newline; Enter or Ctrl+Enter => send
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -650,16 +614,13 @@
       }
     }
   });
-
   // focus input on open
   input.focus();
   scrollToBottom();
 })();
 </script>
     `;
-
         const title = 'AI Chat';
-
         const existingPanel = document.getElementById('mp-aichat-panel');
         if (existingPanel) {
             existingPanel.style.display = existingPanel.style.display === 'none' ? '' : existingPanel.style.display;
@@ -670,7 +631,6 @@
             if (headerTitle) headerTitle.textContent = title;
             return;
         }
-
         const panel = document.createElement('div');
         panel.id = 'mp-aichat-panel';
         panel.style.cssText = `
@@ -679,7 +639,6 @@
             box-shadow:0 8px 30px rgba(0,0,0,.35);font-family:Arial,Helvetica,sans-serif;
             box-sizing:border-box;user-select:none;padding:0;overflow:hidden;
         `;
-
         const header = document.createElement('div');
         header.style.cssText = `
             display:flex;align-items:center;justify-content:space-between;
@@ -687,7 +646,6 @@
             font-weight:700;font-size:13px;
         `;
         header.innerHTML = `<span class="mp-header-title" style="pointer-events:none;">${title}</span>`;
-
         const headerBtns = document.createElement('div');
         headerBtns.style.cssText = 'display:flex;gap:6px;align-items:center;';
         const closeBtn = document.createElement('button');
@@ -700,24 +658,20 @@
         headerBtns.appendChild(closeBtn);
         header.appendChild(headerBtns);
         panel.appendChild(header);
-
         const body = document.createElement('div');
         body.id = 'mp-aichat-body';
         body.style.cssText = `
             width:100%;height:calc(100% - 42px);padding:8px;box-sizing:border-box;
             background:transparent;
         `;
-
         const container = document.createElement('div');
         container.id = 'mp-popup-container';
         container.style.cssText = 'width:100%;height:100%;border-radius:6px;overflow:auto;background:#fff;';
         body.appendChild(container);
         panel.appendChild(body);
         document.body.appendChild(panel);
-
         // inject content (no iframe). This also executes scripts inside the HTML.
         injectContent(container, content);
-
         // Draggable behaviour (uses external draggable() if available, otherwise simple internal drag)
         if (typeof draggable === 'function') {
             draggable(panel, header);
@@ -763,15 +717,12 @@
                 });
             })();
         }
-
         closeBtn.onclick = () => {
             try { panel.remove(); } catch (err) {}
         };
-
         panel.addEventListener('mousedown', () => {
             panel.style.zIndex = 2147483648;
         });
-
         // -------------------------
         // helper: inject HTML and execute scripts inside it
         // -------------------------
@@ -781,11 +732,9 @@
             const parsed = new DOMParser().parseFromString(htmlString, 'text/html');
             // clear target
             while (targetElement.firstChild) targetElement.removeChild(targetElement.firstChild);
-
             // collect children and scripts separately (snapshot)
             const nodes = Array.from(parsed.body.childNodes);
             const scriptNodes = [];
-
             for (const n of nodes) {
               if (n.nodeName === 'SCRIPT') {
                 scriptNodes.push(n);
@@ -794,7 +743,6 @@
                 targetElement.appendChild(document.importNode(n, true));
               }
             }
-
             // run scripts serially to preserve order (handles external and inline)
             (async function runScriptsSerially() {
               for (const oldScript of scriptNodes) {
@@ -809,7 +757,6 @@
                   if (oldScript.type) newScript.type = oldScript.type;
                   if (oldScript.async) newScript.async = true;
                   if (oldScript.defer) newScript.defer = true;
-
                   if (oldScript.src) {
                     // append then set src to start load — await load to preserve serial order
                     await new Promise((resolve) => {
@@ -838,6 +785,7 @@
             try { targetElement.innerHTML = htmlString; } catch (_) {}
           }
         }
+    }
     function draggable(panel, handle) {
         let dragging = false, ox = 0, oy = 0;
         const move = e => {
