@@ -205,7 +205,7 @@
         body.id = 'mp-desmos-body';
         body.style.cssText = `
             width:100%;height:calc(100% - 42px);padding:8px;box-sizing:border-box;
-            background:transparent;
+            background:transparent;margin-bottom:10px;
         `;
         
         const desmosContainer = document.createElement('div');
