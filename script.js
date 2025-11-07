@@ -11,14 +11,14 @@
                 window.__mpToolsState = {
                     speedrunner: false,
                     rightClick: false,
-                    antiAnti: false
+                    removeAnnoying: false
                 };
             }
         } catch (e) {
             window.__mpToolsState = {
                 speedrunner: false,
                 rightClick: false,
-                antiAnti: false
+                removeAnnoying: false
             };
         }
     }
@@ -93,9 +93,9 @@
         const rightClickToggle = createToggle('Right Click', 'rightclick-toggle', !!window.__mpToolsState.rightClick);
         c2.appendChild(rightClickToggle);
 
-        // Anti-Anti-Cheat toggle (combines Anti-Blur + Anti-lockout + red-stuff handling)
-        const antiAntiToggle = createToggle('Anti-Anti-Cheat', 'antianti-toggle', !!window.__mpToolsState.antiAnti);
-        c2.appendChild(antiAntiToggle);
+        // Remove Annoying toggle (combines Anti-Blur + Anti-lockout + red border handling)
+        const removeAnnoyingToggle = createToggle('Remove Annoying', 'removeAnnoying-toggle', !!window.__mpToolsState.removeAnnoying);
+        c2.appendChild(removeAnnoyingToggle);
 
         const calcBtn = btn('Calculator', '#0ea5a4', '#fff');
         c1.appendChild(calcBtn);
@@ -110,7 +110,7 @@
 
         // Initialize toggle functionality (these will also apply the saved state actions)
         setupSpeedrunnerToggle(speedrunnerToggle);
-        setupAntiAntiToggle(antiAntiToggle);
+        setupremoveAnnoyingToggle(removeAnnoyingToggle);
         setupRightClickToggle(rightClickToggle);
 
         draggable(p, h);
@@ -228,24 +228,24 @@
         });
     }
 
-    function setupAntiAntiToggle(toggleContainer) {
+    function setupremoveAnnoyingToggle(toggleContainer) {
         const checkbox = toggleContainer.querySelector('input');
 
         if (checkbox.checked) {
             window.__mpToolsState = window.__mpToolsState || {};
-            window.__mpToolsState.antiAnti = true;
+            window.__mpToolsState.removeAnnoying = true;
             saveState();
-            enableAntiAntiCheat();
+            enableremoveAnnoying();
         }
 
         checkbox.addEventListener('change', function () {
             window.__mpToolsState = window.__mpToolsState || {};
-            window.__mpToolsState.antiAnti = this.checked;
+            window.__mpToolsState.removeAnnoying = this.checked;
             saveState();
             if (this.checked) {
-                enableAntiAntiCheat();
+                enableremoveAnnoying();
             } else {
-                disableAntiAntiCheat();
+                disableremoveAnnoying();
             }
         });
     }
@@ -253,9 +253,9 @@
     /* -------------------------
        Existing feature functions (mostly unchanged)
        ------------------------- */
-    function enableAntiAntiCheat() {
-        if (window.__antiAntiEnabled) return console.log('Anti-Anti-Cheat already enabled');
-        window.__antiAntiEnabled = true;
+    function enableremoveAnnoying() {
+        if (window.__removeAnnoyingEnabled) return console.log('Remove Annoying already enabled');
+        window.__removeAnnoyingEnabled = true;
 
         // Initial sweep
         try {
@@ -309,38 +309,38 @@
 
         try {
             observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
-            window.__antiAntiObserver = observer;
+            window.__removeAnnoyingObserver = observer;
         } catch (e) {
-            console.error('Anti-Anti-Cheat observer failed to start', e);
-            window.__antiAntiObserver = null;
+            console.error('Remove Annoying observer failed to start', e);
+            window.__removeAnnoyingObserver = null;
         }
 
         // Backup interval in case something bypasses the observer
-        window.__antiAntiInterval = setInterval(() => {
+        window.__removeAnnoyingInterval = setInterval(() => {
             try { document.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur')); } catch(_) {}
             try { document.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove()); } catch(_) {}
             try { document.querySelectorAll('div.red-stuff').forEach(el => el.classList.remove('red-stuff')); } catch(_) {}
         }, 300);
 
-        console.log('Anti-Anti-Cheat ON — stripping question-blur, removing overlays, and removing red-stuff class from divs');
+        console.log('Remove Annoying ON — stripping question-blur, removing overlays, and removing red-stuff class from divs');
     }
 
-    function disableAntiAntiCheat() {
-        if (!window.__antiAntiEnabled) return console.log('Anti-Anti-Cheat already disabled');
-        window.__antiAntiEnabled = false;
+    function disableremoveAnnoying() {
+        if (!window.__removeAnnoyingEnabled) return console.log('Remove Annoying already disabled');
+        window.__removeAnnoyingEnabled = false;
         try {
-            if (window.__antiAntiObserver) {
-                window.__antiAntiObserver.disconnect();
-                window.__antiAntiObserver = null;
+            if (window.__removeAnnoyingObserver) {
+                window.__removeAnnoyingObserver.disconnect();
+                window.__removeAnnoyingObserver = null;
             }
         } catch (_) {}
         try {
-            if (window.__antiAntiInterval) {
-                clearInterval(window.__antiAntiInterval);
-                window.__antiAntiInterval = null;
+            if (window.__removeAnnoyingInterval) {
+                clearInterval(window.__removeAnnoyingInterval);
+                window.__removeAnnoyingInterval = null;
             }
         } catch (_) {}
-        console.log('Anti-Anti-Cheat OFF');
+        console.log('Remove Annoying OFF');
     }
 
     function startSpeedrunner() {
