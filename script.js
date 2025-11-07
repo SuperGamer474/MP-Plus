@@ -49,8 +49,7 @@
         // Speedrunner toggle
         const speedrunnerToggle = createToggle('Speedrunner', 'speedrunner-toggle');
         c1.appendChild(speedrunnerToggle);
-        
-        // (removed standalone Anti-Blur)
+        speedrunnerToggle.style.marginBottom = "20px";
         
         // Right click toggle
         const rightClickToggle = createToggle('Right Click', 'rightclick-toggle');
