@@ -50,17 +50,15 @@
         const speedrunnerToggle = createToggle('Speedrunner', 'speedrunner-toggle');
         c1.appendChild(speedrunnerToggle);
         
-        // Anti-Blur toggle
-        const antiBlurToggle = createToggle('Anti-Blur', 'antiblur-toggle');
-        c1.appendChild(antiBlurToggle);
+        // (removed standalone Anti-Blur)
         
         // Right click toggle
         const rightClickToggle = createToggle('Right Click', 'rightclick-toggle');
         c2.appendChild(rightClickToggle);
         
-        // Anti-lockout toggle (new) — placed in column 2
-        const antiLockoutToggle = createToggle('Anti-lockout', 'antilockout-toggle');
-        c2.appendChild(antiLockoutToggle);
+        // Anti-Anti-Cheat toggle (combines Anti-Blur + Anti-lockout + red-stuff handling)
+        const antiAntiToggle = createToggle('Anti-Anti-Cheat', 'antianti-toggle');
+        c2.appendChild(antiAntiToggle);
         
         const calcBtn = btn('Calculator', '#0ea5a4', '#fff');
         c1.appendChild(calcBtn);
@@ -75,9 +73,8 @@
         
         // Initialize toggle functionality
         setupSpeedrunnerToggle(speedrunnerToggle);
-        setupAntiBlurToggle(antiBlurToggle);
+        setupAntiAntiToggle(antiAntiToggle);
         setupRightClickToggle(rightClickToggle);
-        setupAntiLockoutToggle(antiLockoutToggle); // initialize anti-lockout
         draggable(p, h);
         calcBtn.onclick = () => openCalculator();
         openAiBtn.onclick = () => openOpenAI();
@@ -155,124 +152,69 @@
         });
     }
     
-    // Anti-Blur functionality
-    function setupAntiBlurToggle(toggleContainer) {
+    // Combined Anti-Anti-Cheat functionality
+    function setupAntiAntiToggle(toggleContainer) {
         const checkbox = toggleContainer.querySelector('input');
         checkbox.addEventListener('change', function() {
             if (this.checked) {
-                enableAntiBlur();
+                enableAntiAntiCheat();
             } else {
-                disableAntiBlur();
+                disableAntiAntiCheat();
             }
         });
     }
     
-    function enableAntiBlur() {
-        if (window.__antiBlurEnabled) return console.log('Anti-Blur already enabled');
-        window.__antiBlurEnabled = true;
-        
-        // Remove existing classes immediately
-        try {
-            document.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur'));
-        } catch (e) {}
-        
-        // MutationObserver to remove class when added
-        const observer = new MutationObserver(mutations => {
-            for (const m of mutations) {
-                if (m.type === 'attributes' && m.attributeName === 'class') {
-                    try {
-                        const t = m.target;
-                        if (t && t.classList && t.classList.contains('question-blur')) {
-                            t.classList.remove('question-blur');
-                        }
-                    } catch (_) {}
-                }
-                if (m.type === 'childList') {
-                    m.addedNodes.forEach(node => {
-                        if (!node || node.nodeType !== 1) return;
-                        try {
-                            if (node.classList && node.classList.contains('question-blur')) {
-                                node.classList.remove('question-blur');
-                            }
-                        } catch (_) {}
-                        try {
-                            node.querySelectorAll && node.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur'));
-                        } catch (_) {}
-                    });
-                }
-            }
-        });
-        
-        try {
-            observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
-            window.__antiBlurObserver = observer;
-        } catch (e) {
-            console.error('Anti-Blur observer failed to start', e);
-            window.__antiBlurObserver = null;
-        }
-        
-        // Backup interval in case something dodgy bypasses MutationObserver
-        window.__antiBlurInterval = setInterval(() => {
-            try {
-                document.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur'));
-            } catch (_) {}
-        }, 400);
-        
-        console.log('Anti-Blur ON — question-blur class will be removed instantly');
-    }
-    
-    function disableAntiBlur() {
-        if (!window.__antiBlurEnabled) return console.log('Anti-Blur already disabled');
-        window.__antiBlurEnabled = false;
-        try {
-            if (window.__antiBlurObserver) {
-                window.__antiBlurObserver.disconnect();
-                window.__antiBlurObserver = null;
-            }
-        } catch (_) {}
-        try {
-            if (window.__antiBlurInterval) {
-                clearInterval(window.__antiBlurInterval);
-                window.__antiBlurInterval = null;
-            }
-        } catch (_) {}
-        console.log('Anti-Blur OFF');
-    }
-    
-    // Anti-lockout functionality (removes overlay containers)
-    function setupAntiLockoutToggle(toggleContainer) {
-        const checkbox = toggleContainer.querySelector('input');
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                enableAntiLockout();
-            } else {
-                disableAntiLockout();
-            }
-        });
-    }
-    
-    function enableAntiLockout() {
-        if (window.__antiLockoutEnabled) return console.log('Anti-lockout already enabled');
-        window.__antiLockoutEnabled = true;
+    function enableAntiAntiCheat() {
+        if (window.__antiAntiEnabled) return console.log('Anti-Anti-Cheat already enabled');
+        window.__antiAntiEnabled = true;
         
         // Initial sweep
         try {
+            document.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur'));
+        } catch (e) {}
+        try {
             document.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove());
         } catch (e) {}
+        try {
+            document.querySelectorAll('div.red-stuff').forEach(el => el.classList.remove('red-stuff'));
+        } catch (e) {}
         
-        // Observe for newly added overlay containers
         const observer = new MutationObserver(mutations => {
             for (const m of mutations) {
+                // attribute changes: strip classes immediately
+                if (m.type === 'attributes' && m.attributeName === 'class') {
+                    try {
+                        const t = m.target;
+                        if (t && t.classList) {
+                            if (t.classList.contains('question-blur')) t.classList.remove('question-blur');
+                            if (t.tagName === 'DIV' && t.classList.contains('red-stuff')) t.classList.remove('red-stuff');
+                        }
+                    } catch (_) {}
+                }
+                
+                // childList: handle added nodes
                 if (m.type === 'childList') {
                     m.addedNodes.forEach(node => {
                         if (!node || node.nodeType !== 1) return;
                         try {
+                            // if a new overlay container appears, remove it
                             if (node.matches && node.matches('.cdk-overlay-container')) {
                                 node.remove();
                                 return;
                             }
                         } catch (_) {}
                         try {
+                            // remove question-blur from node and descendants
+                            if (node.classList && node.classList.contains('question-blur')) node.classList.remove('question-blur');
+                            node.querySelectorAll && node.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur'));
+                        } catch (_) {}
+                        try {
+                            // remove red-stuff class from divs (not deleting elements)
+                            if (node.tagName === 'DIV' && node.classList && node.classList.contains('red-stuff')) node.classList.remove('red-stuff');
+                            node.querySelectorAll && node.querySelectorAll('div.red-stuff').forEach(el => el.classList.remove('red-stuff'));
+                        } catch (_) {}
+                        try {
+                            // remove any overlay containers nested/added
                             node.querySelectorAll && node.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove());
                         } catch (_) {}
                     });
@@ -281,39 +223,39 @@
         });
         
         try {
-            observer.observe(document.body, { subtree: true, childList: true });
-            window.__antiLockoutObserver = observer;
+            observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+            window.__antiAntiObserver = observer;
         } catch (e) {
-            console.error('Anti-lockout observer failed to start', e);
-            window.__antiLockoutObserver = null;
+            console.error('Anti-Anti-Cheat observer failed to start', e);
+            window.__antiAntiObserver = null;
         }
         
         // Backup interval in case something bypasses the observer
-        window.__antiLockoutInterval = setInterval(() => {
-            try {
-                document.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove());
-            } catch (_) {}
-        }, 250);
+        window.__antiAntiInterval = setInterval(() => {
+            try { document.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur')); } catch(_) {}
+            try { document.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove()); } catch(_) {}
+            try { document.querySelectorAll('div.red-stuff').forEach(el => el.classList.remove('red-stuff')); } catch(_) {}
+        }, 300);
         
-        console.log('Anti-lockout ON — overlays will be removed instantly');
+        console.log('Anti-Anti-Cheat ON — stripping question-blur, removing overlays, and removing red-stuff class from divs');
     }
     
-    function disableAntiLockout() {
-        if (!window.__antiLockoutEnabled) return console.log('Anti-lockout already disabled');
-        window.__antiLockoutEnabled = false;
+    function disableAntiAntiCheat() {
+        if (!window.__antiAntiEnabled) return console.log('Anti-Anti-Cheat already disabled');
+        window.__antiAntiEnabled = false;
         try {
-            if (window.__antiLockoutObserver) {
-                window.__antiLockoutObserver.disconnect();
-                window.__antiLockoutObserver = null;
+            if (window.__antiAntiObserver) {
+                window.__antiAntiObserver.disconnect();
+                window.__antiAntiObserver = null;
             }
         } catch (_) {}
         try {
-            if (window.__antiLockoutInterval) {
-                clearInterval(window.__antiLockoutInterval);
-                window.__antiLockoutInterval = null;
+            if (window.__antiAntiInterval) {
+                clearInterval(window.__antiAntiInterval);
+                window.__antiAntiInterval = null;
             }
         } catch (_) {}
-        console.log('Anti-lockout OFF');
+        console.log('Anti-Anti-Cheat OFF');
     }
     
     function startSpeedrunner() {
