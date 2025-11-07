@@ -251,7 +251,26 @@
     }
 
     /* -------------------------
-       Existing feature functions (mostly unchanged)
+       Simplified Right Click Functions
+       ------------------------- */
+    function enableRightClick() {
+        if (window.__rightClickHandler) return console.log('Right click already enabled');
+        
+        window.__rightClickHandler = e => e.stopPropagation();
+        document.addEventListener('contextmenu', window.__rightClickHandler, true);
+        console.log('Right-click enabled');
+    }
+
+    function disableRightClick() {
+        if (!window.__rightClickHandler) return console.log('Right click already disabled');
+        
+        document.removeEventListener('contextmenu', window.__rightClickHandler, true);
+        window.__rightClickHandler = null;
+        console.log('Right-click disabled');
+    }
+
+    /* -------------------------
+       Existing feature functions (unchanged)
        ------------------------- */
     function enableremoveAnnoying() {
         if (window.__removeAnnoyingEnabled) return console.log('Remove Annoying already enabled');
@@ -379,49 +398,6 @@
         window.__autoClickerStopRequested = true;
         window.__autoClickerRunning = false;
         console.log('Stop requested');
-    }
-
-    function enableRightClick() {
-        if (window.__allowRClickInterval) return console.log('Already running');
-        const handler = e => {
-            try {
-                if (e.target.closest && e.target.closest('#mp-tools-panel, #mp-desmos-panel, #mp-aichat-panel')) {
-                    return;
-                }
-                e.stopImmediatePropagation();
-            } catch (_) {}
-        };
-        const purge = () => {
-            document.oncontextmenu = document.onmousedown = document.onmouseup = null;
-            document.querySelectorAll('*').forEach(el => {
-                if (el.closest && el.closest('#mp-tools-panel, #mp-desmos-panel, #mp-aichat-panel')) {
-                    return;
-                }
-                el.oncontextmenu = el.onmousedown = el.onmouseup = null;
-            });
-            ['contextmenu','mousedown','mouseup'].forEach(ev => {
-                window.addEventListener(ev, handler, true);
-                document.addEventListener(ev, handler, true);
-            });
-            window.__allowRClick_installed = true;
-            window.__allowRClick_handler = handler;
-        };
-        window.__allowRClickInterval = setInterval(purge, 50);
-        console.log('Right-click unblocker ON');
-    }
-
-    function disableRightClick() {
-        if (window.__allowRClickInterval) clearInterval(window.__allowRClickInterval);
-        if (window.__allowRClick_installed && window.__allowRClick_handler) {
-            ['contextmenu','mousedown','mouseup'].forEach(ev => {
-                try { window.removeEventListener(ev, window.__allowRClick_handler, true); } catch (_) {}
-                try { document.removeEventListener(ev, window.__allowRClick_handler, true); } catch (_) {}
-            });
-        }
-        window.__allowRClick_installed = false;
-        window.__allowRClick_handler = null;
-        window.__allowRClickInterval = null;
-        console.log('Right-click unblocker OFF');
     }
 
     /* -------------------------
