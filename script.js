@@ -1,4 +1,11 @@
 (function () {
+    // Prevent multiple injections / double initialization
+    if (window.__mpToolsInitialized) {
+        console.log('MP-Tools: already initialized — skipping re-init');
+        return;
+    }
+    window.__mpToolsInitialized = true;
+
     /* -------------------------
        Persistent global state
        ------------------------- */
@@ -77,7 +84,19 @@
     /* -------------------------
        Feature Toggle Functions
        ------------------------- */
+    // shared debounce for toggles (prevents rapid double-toggle firing)
+    window.__mpToolsLastToggle = window.__mpToolsLastToggle || 0;
+    function shouldDebounceToggle(ms = 300) {
+        const now = Date.now();
+        if (now - window.__mpToolsLastToggle < ms) {
+            return true;
+        }
+        window.__mpToolsLastToggle = now;
+        return false;
+    }
+
     function toggleSpeedrunner() {
+        if (shouldDebounceToggle()) return console.log('toggleSpeedrunner: debounced');
         window.__mpToolsState.speedrunner = !window.__mpToolsState.speedrunner;
         saveState();
         
@@ -91,6 +110,7 @@
     }
 
     function toggleRemoveAnnoying() {
+        if (shouldDebounceToggle()) return console.log('toggleRemoveAnnoying: debounced');
         window.__mpToolsState.removeAnnoying = !window.__mpToolsState.removeAnnoying;
         saveState();
         
@@ -104,6 +124,7 @@
     }
 
     function toggleRightClick() {
+        if (shouldDebounceToggle()) return console.log('toggleRightClick: debounced');
         window.__mpToolsState.rightClick = !window.__mpToolsState.rightClick;
         saveState();
         
@@ -134,25 +155,21 @@
             return false;
         };
         
-        // Remove common selection-blocking styles
-        const stylesToRemove = [
-            'user-select: none',
-            '-webkit-user-select: none',
-            '-moz-user-select: none',
-            '-ms-user-select: none'
-        ];
-        
-        // Remove inline styles that block selection
+        // Remove common selection-blocking styles (inline)
         document.querySelectorAll('*').forEach(element => {
-            if (element.style.userSelect === 'none' || 
-                element.style.webkitUserSelect === 'none' ||
-                element.style.MozUserSelect === 'none' ||
-                element.style.msUserSelect === 'none') {
-                element.style.userSelect = 'auto';
-                element.style.webkitUserSelect = 'auto';
-                element.style.MozUserSelect = 'auto';
-                element.style.msUserSelect = 'auto';
-            }
+            try {
+                if (element.style) {
+                    if (element.style.userSelect === 'none' || 
+                        element.style.webkitUserSelect === 'none' ||
+                        element.style.MozUserSelect === 'none' ||
+                        element.style.msUserSelect === 'none') {
+                        element.style.userSelect = 'auto';
+                        element.style.webkitUserSelect = 'auto';
+                        element.style.MozUserSelect = 'auto';
+                        element.style.msUserSelect = 'auto';
+                    }
+                }
+            } catch (_) {}
         });
         
         // Add event listeners to prevent selection blocking
@@ -196,7 +213,7 @@
         
         // Remove the CSS override
         if (window.__selectionStyle) {
-            window.__selectionStyle.remove();
+            try { window.__selectionStyle.remove(); } catch (_) {}
             window.__selectionStyle = null;
         }
         
@@ -332,26 +349,44 @@
     }
 
     /* -------------------------
-       Keyboard Shortcuts Setup
+       Keyboard Shortcuts Setup (improved)
        ------------------------- */
     function setupKeyboardShortcuts() {
+        if (window.__mpToolsKeyboardSetup) {
+            console.log('Keyboard shortcuts already set up');
+            return;
+        }
+        window.__mpToolsKeyboardSetup = true;
+
+        // Debounce guard shared for whole keyboard handling
+        window.__mpToolsLastKeyAt = window.__mpToolsLastKeyAt || 0;
+
         document.addEventListener('keydown', function(e) {
-            // Alt+1 - Speedrunner
-            if (e.altKey && e.key === '1') {
+            // Basic guard to avoid handling repeated keydown events too quickly
+            const now = Date.now();
+            if (now - window.__mpToolsLastKeyAt < 150) return;
+            // Use physical key code (avoids locale surprises). Fallback to e.key if needed.
+            const isDigit1 = e.code === 'Digit1' || e.key === '1';
+            const isDigit2 = e.code === 'Digit2' || e.key === '2';
+            const isDigit3 = e.code === 'Digit3' || e.key === '3';
+
+            if (e.altKey && isDigit1) {
                 e.preventDefault();
+                window.__mpToolsLastKeyAt = now;
+                console.log('Alt+1 pressed => toggling speedrunner');
                 toggleSpeedrunner();
-            }
-            // Alt+2 - Remove Annoying
-            else if (e.altKey && e.key === '2') {
+            } else if (e.altKey && isDigit2) {
                 e.preventDefault();
+                window.__mpToolsLastKeyAt = now;
+                console.log('Alt+2 pressed => toggling removeAnnoying');
                 toggleRemoveAnnoying();
-            }
-            // Alt+3 - Right Click
-            else if (e.altKey && e.key === '3') {
+            } else if (e.altKey && isDigit3) {
                 e.preventDefault();
+                window.__mpToolsLastKeyAt = now;
+                console.log('Alt+3 pressed => toggling rightClick');
                 toggleRightClick();
             }
-        });
+        }, true);
     }
 
     /* -------------------------
