@@ -287,7 +287,7 @@
                 const els = [...document.querySelectorAll(sel)];
                 for (const el of els) if (el.textContent.trim() === txt) { clearInterval(iv); res(el); return; }
                 if (Date.now() - s > to) { clearInterval(iv); rej(new Error('Timeout: ' + txt)); }
-            }, 3000);
+            }, 200);
         });
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
