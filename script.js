@@ -224,12 +224,46 @@
         if (window.__removeAnnoyingEnabled) return console.log('Remove Annoying already enabled');
         window.__removeAnnoyingEnabled = true;
 
+        // Function to check if an element contains the teacher note text
+        function hasTeacherNote(element) {
+            try {
+                const paragraphs = element.querySelectorAll('p');
+                for (const p of paragraphs) {
+                    if (p.textContent && p.textContent.includes('Also note that teachers')) {
+                        return true;
+                    }
+                }
+                return false;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Function to safely remove teacher note popups
+        function removeTeacherNotePopups() {
+            try {
+                // Check all cdk-overlay-container elements
+                document.querySelectorAll('.cdk-overlay-container').forEach(container => {
+                    try {
+                        // Look for teacher note popups within this container
+                        const overlays = container.querySelectorAll('.cdk-overlay-pane, .mat-dialog-container, [role="dialog"]');
+                        for (const overlay of overlays) {
+                            if (hasTeacherNote(overlay)) {
+                                console.log('Found teacher note popup - removing');
+                                overlay.remove();
+                            }
+                        }
+                    } catch (_) {}
+                });
+            } catch (_) {}
+        }
+
         // Initial sweep
         try {
             document.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur'));
         } catch (e) {}
         try {
-            document.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove());
+            removeTeacherNotePopups();
         } catch (e) {}
         try {
             document.querySelectorAll('div.red-stuff').forEach(el => el.classList.remove('red-stuff'));
@@ -254,7 +288,8 @@
                         if (!node || node.nodeType !== 1) return;
                         try {
                             if (node.matches && node.matches('.cdk-overlay-container')) {
-                                node.remove();
+                                // Check if this new overlay container has teacher notes before removing
+                                setTimeout(removeTeacherNotePopups, 10);
                                 return;
                             }
                         } catch (_) {}
@@ -267,7 +302,13 @@
                             node.querySelectorAll && node.querySelectorAll('div.red-stuff').forEach(el => el.classList.remove('red-stuff'));
                         } catch (_) {}
                         try {
-                            node.querySelectorAll && node.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove());
+                            // Check for new overlay containers in added nodes
+                            if (node.querySelectorAll) {
+                                const newContainers = node.querySelectorAll('.cdk-overlay-container');
+                                if (newContainers.length > 0) {
+                                    setTimeout(removeTeacherNotePopups, 10);
+                                }
+                            }
                         } catch (_) {}
                     });
                 }
@@ -285,11 +326,11 @@
         // Backup interval in case something bypasses the observer
         window.__removeAnnoyingInterval = setInterval(() => {
             try { document.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur')); } catch(_) {}
-            try { document.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove()); } catch(_) {}
+            try { removeTeacherNotePopups(); } catch(_) {}
             try { document.querySelectorAll('div.red-stuff').forEach(el => el.classList.remove('red-stuff')); } catch(_) {}
         }, 300);
 
-        console.log('Remove Annoying ON — stripping question-blur, removing overlays, and removing red-stuff class from divs');
+        console.log('Remove Annoying ON — stripping question-blur, removing teacher note popups, and removing red-stuff class from divs');
     }
 
     function disableremoveAnnoying() {
