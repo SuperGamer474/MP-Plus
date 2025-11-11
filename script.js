@@ -397,10 +397,11 @@
         const panel = document.createElement('div');
         panel.id = 'mp-desmos-panel';
         panel.style.cssText = `
-            position:fixed;left:12px;top:12px;width:320px;height:400px;z-index:2147483648;
+            position:fixed;left:12px;top:12px;width:320px;height:440px; /* slightly taller */
+            z-index:2147483648;
             background:#fff;color:#111;border-radius:8px;border:1px solid #bbb;
             box-shadow:0 8px 30px rgba(0,0,0,.4);font-family:Arial,Helvetica,sans-serif;
-            box-sizing:border-box;user-select:none;padding:0;overflow:hidden;
+            box-sizing:border-box;user-select:none;overflow:hidden;
         `;
 
         const header = document.createElement('div');
@@ -416,13 +417,15 @@
         const body = document.createElement('div');
         body.id = 'mp-desmos-body';
         body.style.cssText = `
-            width:100%;height:calc(100% - 42px);padding:8px;box-sizing:border-box;
-            background:transparent;
+            width:100%;height:calc(100% - 36px); /* header is 36px high */
+            margin:0;padding:0;box-sizing:border-box;background:transparent;
         `;
 
         const desmosContainer = document.createElement('div');
         desmosContainer.id = 'mp-desmos-body-calc';
-        desmosContainer.style.cssText = 'width:100%;height:100%;border-radius:6px;overflow:hidden;';
+        desmosContainer.style.cssText = `
+            width:100%;height:100%;border-radius:6px;overflow:hidden;
+        `;
         body.appendChild(desmosContainer);
         panel.appendChild(body);
         document.body.appendChild(panel);
