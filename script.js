@@ -349,6 +349,168 @@
     }
 
     /* -------------------------
+       Calculator feature (from original) — only this feature added
+       - No close button in header
+       - Toggle via Alt+4 (keyboard) or programmatically via toggleCalculator()
+       ------------------------- */
+
+    function ensureDesmos() {
+        if (window.Desmos) return Promise.resolve();
+        if (window.__mp_desmos_loading_promise) return window.__mp_desmos_loading_promise;
+        window.__mp_desmos_loading_promise = new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://www.desmos.com/api/v1.11/calculator.js?apiKey=78043328c170484d8c2b47e1013a0d12';
+            s.async = true;
+            s.onload = () => resolve();
+            s.onerror = (e) => reject(new Error('Failed to load Desmos script'));
+            document.head.appendChild(s);
+        });
+        return window.__mp_desmos_loading_promise;
+    }
+
+    function initDesmos() {
+        try {
+            const el = document.getElementById('mp-desmos-body-calc');
+            if (!el) return;
+            if (window.__mp_desmos_instance) {
+                try { if (typeof window.__mp_desmos_instance.update === 'function') window.__mp_desmos_instance.update(); } catch(_) {}
+                return;
+            }
+            window.__mp_desmos_instance = Desmos && Desmos.ScientificCalculator
+                ? Desmos.ScientificCalculator(el, { keypad: true })
+                : null;
+            if (!window.__mp_desmos_instance) console.error('Desmos object not available or API changed');
+        } catch (err) {
+            console.error('Error initialising Desmos', err);
+        }
+    }
+
+    function openCalculator() {
+        const existingPanel = document.getElementById('mp-desmos-panel');
+        if (existingPanel) {
+            // already open — bring forward
+            existingPanel.style.display = '';
+            existingPanel.style.zIndex = 2147483648;
+            return;
+        }
+
+        const panel = document.createElement('div');
+        panel.id = 'mp-desmos-panel';
+        panel.style.cssText = `
+            position:fixed;left:12px;top:12px;width:320px;height:400px;z-index:2147483648;
+            background:#fff;color:#111;border-radius:8px;border:1px solid #bbb;
+            box-shadow:0 8px 30px rgba(0,0,0,.4);font-family:Arial,Helvetica,sans-serif;
+            box-sizing:border-box;user-select:none;padding:0;overflow:hidden;
+        `;
+
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display:flex;align-items:center;justify-content:space-between;
+            background:#2b2f33;color:#fff;padding:8px 10px;cursor:grab;
+            font-weight:700;font-size:13px;
+        `;
+        // NO close button here (per request)
+        header.innerHTML = `<span style="pointer-events:none;">Calculator</span>`;
+        panel.appendChild(header);
+
+        const body = document.createElement('div');
+        body.id = 'mp-desmos-body';
+        body.style.cssText = `
+            width:100%;height:calc(100% - 42px);padding:8px;box-sizing:border-box;
+            background:transparent;
+        `;
+
+        const desmosContainer = document.createElement('div');
+        desmosContainer.id = 'mp-desmos-body-calc';
+        desmosContainer.style.cssText = 'width:100%;height:100%;border-radius:6px;overflow:hidden;';
+        body.appendChild(desmosContainer);
+        panel.appendChild(body);
+        document.body.appendChild(panel);
+
+        // simple drag implementation (keeps file self-contained)
+        (function simpleDrag() {
+            let dragging = false, ox = 0, oy = 0;
+            const move = e => {
+                const x = (e.clientX !== undefined) ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX);
+                const y = (e.clientY !== undefined) ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY);
+                if (!dragging || x == null) return;
+                panel.style.left = (x - ox) + 'px';
+                panel.style.top  = (y - oy) + 'px';
+                panel.style.right = '';
+            };
+            const up = () => {
+                dragging = false;
+                document.removeEventListener('mousemove', move);
+                document.removeEventListener('mouseup', up);
+                document.removeEventListener('touchmove', move);
+                document.removeEventListener('touchend', up);
+                header.style.cursor = 'grab';
+            };
+            header.addEventListener('mousedown', e => {
+                dragging = true;
+                const r = panel.getBoundingClientRect();
+                ox = e.clientX - r.left;
+                oy = e.clientY - r.top;
+                document.addEventListener('mousemove', move);
+                document.addEventListener('mouseup', up);
+                header.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            header.addEventListener('touchstart', e => {
+                dragging = true;
+                const t = e.touches[0];
+                const r = panel.getBoundingClientRect();
+                ox = t.clientX - r.left;
+                oy = t.clientY - r.top;
+                document.addEventListener('touchmove', move);
+                document.addEventListener('touchend', up);
+                header.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+        })();
+
+        // ensure Desmos loads and initializes
+        ensureDesmos().then(initDesmos).catch(err => {
+            console.error('Failed to load Desmos calculator:', err);
+            const errNotice = document.createElement('div');
+            errNotice.style.cssText = 'padding:10px;color:#900;font-weight:700;';
+            errNotice.textContent = 'Desmos failed to load.';
+            const bodyEl = document.getElementById('mp-desmos-body');
+            bodyEl && bodyEl.appendChild(errNotice);
+        });
+
+        panel.addEventListener('mousedown', () => {
+            panel.style.zIndex = 2147483648;
+        });
+    }
+
+    function destroyCalculatorPanel() {
+        try {
+            const panel = document.getElementById('mp-desmos-panel');
+            if (panel) panel.remove();
+        } catch (_) {}
+        try {
+            if (window.__mp_desmos_instance && typeof window.__mp_desmos_instance.destroy === 'function') {
+                window.__mp_desmos_instance.destroy();
+            }
+        } catch (_) {}
+        window.__mp_desmos_instance = null;
+        console.log('Calculator panel removed');
+    }
+
+    function toggleCalculator() {
+        if (shouldDebounceToggle()) return console.log('toggleCalculator: debounced');
+        const existing = document.getElementById('mp-desmos-panel');
+        if (existing) {
+            destroyCalculatorPanel();
+            showStatus('Calculator - OFF', '#ef4444');
+        } else {
+            openCalculator();
+            showStatus('Calculator - ON', '#10b981');
+        }
+    }
+
+    /* -------------------------
        Keyboard Shortcuts Setup (improved)
        ------------------------- */
     function setupKeyboardShortcuts() {
@@ -369,6 +531,7 @@
             const isDigit1 = e.code === 'Digit1' || e.key === '1';
             const isDigit2 = e.code === 'Digit2' || e.key === '2';
             const isDigit3 = e.code === 'Digit3' || e.key === '3';
+            const isDigit4 = e.code === 'Digit4' || e.key === '4';
 
             if (e.altKey && isDigit1) {
                 e.preventDefault();
@@ -385,6 +548,11 @@
                 window.__mpToolsLastKeyAt = now;
                 console.log('Alt+3 pressed => toggling rightClick');
                 toggleRightClick();
+            } else if (e.altKey && isDigit4) {
+                e.preventDefault();
+                window.__mpToolsLastKeyAt = now;
+                console.log('Alt+4 pressed => toggling calculator');
+                toggleCalculator();
             }
         }, true);
     }
@@ -410,7 +578,7 @@
             enableremoveAnnoying();
         }
         
-        console.log('MP-Tools activated - Use Alt+1, Alt+2, Alt+3 to toggle features');
+        console.log('MP-Tools activated - Use Alt+1, Alt+2, Alt+3 to toggle features; Alt+4 toggles Calculator');
     }
 
     // Run initialization
