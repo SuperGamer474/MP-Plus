@@ -46,9 +46,9 @@
         baldock:     { gradient: 'linear-gradient(limegreen, green)',         text: 'BALDOCK' },
         warren:      { gradient: 'linear-gradient(skyblue, blue)',            text: 'WARREN' },
         white:       { gradient: 'linear-gradient(yellow, orange)',           text: 'WHITE' },
-        christmas:       { gradient: 'linear-gradient(white, silver, green, red)',           text: 'CHRISTMAS' },
-        halloween:       { gradient: 'linear-gradient(white, yellow, orange, black)',           text: 'HALLOWEEN' },
-        easter:       { gradient: 'linear-gradient(white, pink, orange, red, brown)',           text: 'EASTER' }
+        christmas:       { gradient: 'linear-gradient(white, green, red)',           text: 'CHRISTMAS' },
+        halloween:       { gradient: 'linear-gradient(white, orange, black)',           text: 'HALLOWEEN' },
+        easter:       { gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',           text: 'EASTER' }
     };
 
     function applyThemeToBar(bar, theme) {
