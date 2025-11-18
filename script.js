@@ -49,7 +49,7 @@
         christmas:       { gradient: 'linear-gradient(white, white, green, red, red)',           text: 'CHRISTMAS' },
         halloween:       { gradient: 'linear-gradient(white, orange, black)',           text: 'HALLOWEEN' },
         easter:       { gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',           text: 'EASTER' },
-        patricks:       { gradient: 'linear-gradient(limegreen, green, orange, brown)',           text: 'ST PATRICKS DAY' }
+        patricks:       { gradient: 'linear-gradient(green, darkgreen, orange)',           text: 'ST PATRICKS DAY' }
     };
 
     function applyThemeToBar(bar, theme) {
