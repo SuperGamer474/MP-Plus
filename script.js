@@ -48,8 +48,6 @@
         white:       { gradient: 'linear-gradient(yellow, orange)',           text: 'WHITE' }
     };
 
-    let progressObserver = null;
-
     function applyThemeToBar(bar, theme) {
         const width = bar.style.width || '0%';
         bar.style.cssText = `
@@ -65,35 +63,8 @@
     }
 
     function applyProgressTheme() {
-        if (progressObserver) progressObserver.disconnect();
-
         const theme = THEMES[window.__mpToolsState.progressTheme];
-
-        // Initial apply
         document.querySelectorAll('div.progress-inner').forEach(bar => applyThemeToBar(bar, theme));
-
-        progressObserver = new MutationObserver(mutations => {
-            mutations.forEach(m => {
-                if (m.type === 'childList') {
-                    m.addedNodes.forEach(node => {
-                        if (node.nodeType !== 1) return;
-                        if (node.classList && node.classList.contains('progress-inner')) {
-                            applyThemeToBar(node, theme);
-                        }
-                        if (node.querySelectorAll) {
-                            node.querySelectorAll('div.progress-inner').forEach(bar => applyThemeToBar(bar, theme));
-                        }
-                    });
-                } else if (m.type === 'attributes' && m.attributeName === 'style') {
-                    const t = m.target;
-                    if (t.classList && t.classList.contains('progress-inner')) {
-                        applyThemeToBar(t, theme);
-                    }
-                }
-            });
-        });
-
-        progressObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
     }
 
     function cycleProgressTheme() {
@@ -390,8 +361,6 @@
             console.error('Remove Annoying observer failed to start', e);
             window.__removeAnnoyingObserver = null;
         }
-
-        // Removed the setInterval to reduce polling and potential freezes
 
         console.log('Remove Annoying ON — stripping question-blur, removing overlays, and removing red-stuff class from divs');
     }
