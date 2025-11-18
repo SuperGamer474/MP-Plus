@@ -48,7 +48,8 @@
         white:       { gradient: 'linear-gradient(yellow, orange)',           text: 'WHITE' },
         christmas:       { gradient: 'linear-gradient(white, white, green, red, red)',           text: 'CHRISTMAS' },
         halloween:       { gradient: 'linear-gradient(white, orange, black)',           text: 'HALLOWEEN' },
-        easter:       { gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',           text: 'EASTER' }
+        easter:       { gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',           text: 'EASTER' },
+        patricks:       { gradient: 'linear-gradient(limegreen, green, orange, brown)',           text: 'ST PATRICKS DAY' }
     };
 
     function applyThemeToBar(bar, theme) {
@@ -71,7 +72,7 @@
     }
 
     function cycleProgressTheme() {
-        const order = ['default', 'brimblecombe', 'baldock', 'warren', 'white', 'halloween', 'easter', 'christmas'];
+        const order = ['default', 'brimblecombe', 'baldock', 'warren', 'white', 'halloween', 'easter', 'christmas', 'patricks'];
         const currentIdx = order.indexOf(window.__mpToolsState.progressTheme);
         const nextIdx = (currentIdx + 1) % order.length;
         window.__mpToolsState.progressTheme = order[nextIdx];
