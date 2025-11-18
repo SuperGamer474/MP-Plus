@@ -96,7 +96,7 @@
         clearTimeout(alt6Timer);
         alt6Timer = setTimeout(() => {
             alt6Presses = 0;
-        }, 100);
+        }, 250);
     }
 
     function showProgressThemeMenu() {
