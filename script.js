@@ -5,7 +5,6 @@
         return;
     }
     window.__mpToolsInitialized = true;
-
     /* -------------------------
        Persistent global state
        ------------------------- */
@@ -36,42 +35,98 @@
             localStorage.setItem('__mpToolsState_v2', JSON.stringify(window.__mpToolsState || {}));
         } catch (e) { /* ignore */ }
     }
-
     // init global state
     if (!window.__mpToolsState) loadState();
-
+    /* -------------------------
+       Updated Progress Bar Themes – now emoji-only, no text labels
+       Emojis are stored in arrays (no duplicates in the array itself)
+       When rendered, the emoji sequence repeats to fill the full width of the bar
+       ------------------------- */
     const THEMES = {
-        default:      { gradient: 'linear-gradient(rgb(104, 210, 255), rgb(63, 145, 225))', text: null },
-        brimblecombe:{ gradient: 'linear-gradient(red, maroon)',               text: 'BRIMBLECOMBE' },
-        baldock:     { gradient: 'linear-gradient(limegreen, green)',         text: 'BALDOCK' },
-        warren:      { gradient: 'linear-gradient(skyblue, blue)',            text: 'WARREN' },
-        white:       { gradient: 'linear-gradient(yellow, orange)',           text: 'WHITE' },
-        christmas:       { gradient: 'linear-gradient(white, white, green, red, red)',           text: '🎅 🎄 🎁 ✨☃︎🎅🎄❄️☃️🎁🦌⋆𐙚❅🦌*°⋆❆.⛸️🎄' },
-        halloween:       { gradient: 'linear-gradient(white, orange, black)',           text: '☠️ 🍬 🏚️ 👻 🫣 👺 💀☠️ 🍬 🏚️ 👻 🫣 👺 💀 ' },
-        easter:       { gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',           text: '🐤 🐰 🐥 🎁 🌈 🦋 🥚🐤 🐰 🐥 🎁 🌈 🦋 🥚' },
-        patricks:       { gradient: 'linear-gradient(green, darkgreen, orange)',           text: '🫶🍀🍦💚🤞💰🌈🔐🤍 ☘️🌈💰🍀✨' },
-        ocean:       { gradient: 'linear-gradient(#00BCBC, lightblue, lightblue, lightyellow, lightyellow)',           text: '˖°𓇼🌊⋆🐚🫧 ·｡🪼⋆｡𖦹°🫧⛱️🏝️🏄🌴🍹🌞 ' },
+        default: { gradient: 'linear-gradient(rgb(104, 210, 255), rgb(63, 145, 225))', emojis: [] }, // no overlay emojis
+        brimblecombe: {
+            gradient: 'linear-gradient(red, maroon)',
+            emojis: ['', '', '', '', ''] // placeholder – replace later
+        },
+        baldock: {
+            gradient: 'linear-gradient(limegreen, green)',
+            emojis: ['','','','',''] // placeholder
+        },
+        warren: {
+            gradient: 'linear-gradient(skyblue, blue)',
+            emojis: ['','','',''] // placeholder
+        },
+        white: {
+            gradient: 'linear-gradient(yellow, orange)',
+            emojis: ['','','',''] // placeholder
+        },
+        christmas: {
+            gradient: 'linear-gradient(white, white, green, red, red)',
+            emojis: ['🎅','🎄','🎁','✨','☃️','❄️','🦌','⛄','🔔'] // example real ones (feel free to change)
+        },
+        halloween: {
+            gradient: 'linear-gradient(white, orange, black)',
+            emojis: ['☠️','🍬','🏚️','👻','🫣','👺','💀','🦇','🎃']
+        },
+        easter: {
+            gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',
+            emojis: ['🐤','🐰','🐥','🎁','🌈','🦋','🥚','🌷','🐣']
+        },
+        patricks: {
+            gradient: 'linear-gradient(green, darkgreen, orange)',
+            emojis: ['🍀','💚','🤞','💰','🌈','☘️','🪙','🍻']
+        },
+        ocean: {
+            gradient: 'linear-gradient(#00BCBC, lightblue, lightblue, lightyellow, lightyellow)',
+            emojis: ['𓇼','🌊','🐚','🫧','🪼','⛱️','🏝️','🏄','🌴','🍹','🌞']
+        },
     };
-
     function applyThemeToBar(bar, theme) {
         const width = bar.style.width || '0%';
+
+        // Base styles (same as before)
         bar.style.cssText = `
             width: ${width};
-            padding-top: ${theme.text ? '5px' : '0'};
+            padding-top: 8px;
             background: ${theme.gradient};
             text-align: center;
             font-weight: bold;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            font-size: 18px;
+            line-height: 1;
+            overflow: hidden;
         `;
-        bar.innerHTML = theme.text ? `<b>${theme.text}</b>` : '';
-    }
 
+        // Emoji overlay – repeat sequence to fill bar width
+        if (theme.emojis && theme.emojis.length > 0) {
+            // Create a long repeated string so it always overflows the bar (looks full-width)
+            const repeatCount = Math.ceil(50 / theme.emojis.length) + 2; // plenty
+            const emojiLine = theme.emojis.join(' ').repeat(repeatCount);
+
+            bar.innerHTML = `
+                <div style="
+                    display: block;
+                    width: 100%;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    animation: scroll 25s linear infinite;
+                ">${emojiLine}</div>
+                <style>
+                    @keyframes scroll {
+                        0%   { transform: translateX(0); }
+                        100% { transform: translateX(-50%); }
+                    }
+                </style>
+            `;
+        } else {
+            bar.innerHTML = ''; // default theme = no emojis
+        }
+    }
     function applyProgressTheme() {
         const theme = THEMES[window.__mpToolsState.progressTheme];
         document.querySelectorAll('div.progress-inner').forEach(bar => applyThemeToBar(bar, theme));
     }
-
     function cycleProgressTheme() {
         const order = ['default', 'brimblecombe', 'baldock', 'warren', 'white', 'halloween', 'easter', 'christmas', 'patricks', 'ocean'];
         const currentIdx = order.indexOf(window.__mpToolsState.progressTheme);
@@ -79,15 +134,12 @@
         window.__mpToolsState.progressTheme = order[nextIdx];
         saveState();
         applyProgressTheme();
-
         const name = window.__mpToolsState.progressTheme === 'default' ? 'Default' : window.__mpToolsState.progressTheme.toUpperCase();
         showStatus(`Progress theme: ${name}`, '#ffd700');
     }
-
     // Double-press detection for Alt+6 menu
     let alt6Presses = 0;
     let alt6Timer = null;
-
     function handleAlt6() {
         alt6Presses++;
         if (alt6Presses === 1) {
@@ -97,18 +149,15 @@
             // double press → show selection menu
             showProgressThemeMenu();
         }
-
         clearTimeout(alt6Timer);
         alt6Timer = setTimeout(() => {
             alt6Presses = 0;
         }, 400);
     }
-
     function showProgressThemeMenu() {
         // Remove any existing menu
         const old = document.getElementById('mp-progress-theme-menu');
         if (old) old.remove();
-
         const menu = document.createElement('div');
         menu.id = 'mp-progress-theme-menu';
         menu.style.cssText = `
@@ -125,9 +174,7 @@
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         `;
-
         menu.innerHTML = `<div style="font-size:18px;font-weight:bold;margin-bottom:15px;">Choose Progress Bar Theme</div>`;
-
         Object.keys(THEMES).forEach(key => {
             const btn = document.createElement('div');
             btn.textContent = key === 'default' ? 'Default (Blue)' : key.toUpperCase();
@@ -152,23 +199,19 @@
             };
             menu.appendChild(btn);
         });
-
         const closeBtn = document.createElement('div');
         closeBtn.textContent = 'Close';
         closeBtn.style.cssText = 'margin-top:15px;color:#aaa;cursor:pointer;';
         closeBtn.onclick = () => menu.remove();
         menu.appendChild(closeBtn);
-
         document.body.appendChild(menu);
     }
-
     /* -------------------------
        Status Display Functions
        ------------------------- */
     function showStatus(message, color) {
         const existingStatus = document.getElementById('mp-tools-status');
         if (existingStatus) existingStatus.remove();
-
         const status = document.createElement('div');
         status.id = 'mp-tools-status';
         status.style.cssText = `
@@ -189,16 +232,13 @@
         `;
         status.textContent = message;
         document.body.appendChild(status);
-
         setTimeout(() => {
             if (status.parentNode) status.remove();
         }, 2000);
     }
-
     function showActivated() {
         showStatus('MP-Tools activated', '#3b82f6'); // blue
     }
-
     /* -------------------------
        Feature Toggle Functions
        ------------------------- */
@@ -209,7 +249,6 @@
         window.__mpToolsLastToggle = now;
         return false;
     }
-
     function toggleSpeedrunner() {
         if (shouldDebounceToggle()) return console.log('toggleSpeedrunner: debounced');
         window.__mpToolsState.speedrunner = !window.__mpToolsState.speedrunner;
@@ -222,7 +261,6 @@
             showStatus('Speedrunner - OFF', '#ef4444');
         }
     }
-
     function toggleRemoveAnnoying() {
         if (shouldDebounceToggle()) return console.log('toggleRemoveAnnoying: debounced');
         window.__mpToolsState.removeAnnoying = !window.__mpToolsState.removeAnnoying;
@@ -235,7 +273,6 @@
             showStatus('Remove Annoying - OFF', '#ef4444');
         }
     }
-
     function toggleRightClick() {
         if (shouldDebounceToggle()) return console.log('toggleRightClick: debounced');
         window.__mpToolsState.rightClick = !window.__mpToolsState.rightClick;
@@ -248,23 +285,19 @@
             showStatus('Right Click - OFF', '#ef4444');
         }
     }
-
     /* -------------------------
        ORIGINAL Feature Implementations (Restored)
        ------------------------- */
     function enableRightClickAndSelect() {
         if (window.__rightClickHandler) return console.log('Right click and text selection already enabled');
-
         window.__rightClickHandler = e => e.stopPropagation();
         document.addEventListener('contextmenu', window.__rightClickHandler, true);
-
         window.__textSelectHandler = e => {
             if (e.type === 'click' || e.type === 'mousedown') return;
             e.stopPropagation();
             e.stopImmediatePropagation();
             return false;
         };
-
         document.querySelectorAll('*').forEach(element => {
             try {
                 if (element.style) {
@@ -280,12 +313,10 @@
                 }
             } catch (_) {}
         });
-
         const events = ['selectstart', 'dragstart'];
         events.forEach(eventType => {
             document.addEventListener(eventType, window.__textSelectHandler, true);
         });
-
         if (!window.__selectionStyle) {
             window.__selectionStyle = document.createElement('style');
             window.__selectionStyle.textContent = `
@@ -298,16 +329,12 @@
             `;
             document.head.appendChild(window.__selectionStyle);
         }
-
         console.log('Right-click and text selection enabled');
     }
-
     function disableRightClickAndSelect() {
         if (!window.__rightClickHandler) return console.log('Right click and text selection already disabled');
-
         document.removeEventListener('contextmenu', window.__rightClickHandler, true);
         window.__rightClickHandler = null;
-
         if (window.__textSelectHandler) {
             const events = ['selectstart', 'dragstart'];
             events.forEach(eventType => {
@@ -315,23 +342,18 @@
             });
             window.__textSelectHandler = null;
         }
-
         if (window.__selectionStyle) {
             try { window.__selectionStyle.remove(); } catch (_) {}
             window.__selectionStyle = null;
         }
-
         console.log('Right-click and text selection disabled');
     }
-
     function enableremoveAnnoying() {
         if (window.__removeAnnoyingEnabled) return console.log('Remove Annoying already enabled');
         window.__removeAnnoyingEnabled = true;
-
         try { document.querySelectorAll('.question-blur').forEach(el => el.classList.remove('question-blur')); } catch(e){}
         try { document.querySelectorAll('.cdk-overlay-container').forEach(el => el.remove()); } catch(e){}
         try { document.querySelectorAll('div.red-stuff').forEach(el => el.classList.remove('red-stuff')); } catch(e){}
-
         const observer = new MutationObserver(mutations => {
             for (const m of mutations) {
                 if (m.type === 'attributes' && m.attributeName === 'class') {
@@ -358,7 +380,6 @@
                 }
             }
         });
-
         try {
             observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
             window.__removeAnnoyingObserver = observer;
@@ -366,17 +387,14 @@
             console.error('Remove Annoying observer failed to start', e);
             window.__removeAnnoyingObserver = null;
         }
-
         console.log('Remove Annoying ON — stripping question-blur, removing overlays, and removing red-stuff class from divs');
     }
-
     function disableremoveAnnoying() {
         if (!window.__removeAnnoyingEnabled) return console.log('Remove Annoying already disabled');
         window.__removeAnnoyingEnabled = false;
         try { if (window.__removeAnnoyingObserver) { window.__removeAnnoyingObserver.disconnect(); window.__removeAnnoyingObserver = null; } } catch(_) {}
         console.log('Remove Annoying OFF');
     }
-
     function startSpeedrunner() {
         if (window.__autoClickerRunning) return console.log('Speedrunner already running');
         window.__autoClickerStopRequested = false;
@@ -390,7 +408,6 @@
             }, 200);
         });
         const sleep = ms => new Promise(r => setTimeout(r, ms));
-
         (async function run() {
             try {
                 while (!window.__autoClickerStopRequested) {
@@ -408,13 +425,11 @@
             }
         })();
     }
-
     function stopSpeedrunner() {
         window.__autoClickerStopRequested = true;
         window.__autoClickerRunning = false;
         console.log('Stop requested');
     }
-
     /* -------------------------
        Calculator feature
        - No close button in header
@@ -422,7 +437,6 @@
        - CSS sized to avoid clipping / extra bottom space
        - Shows "Loading..." until Desmos initialises
        ------------------------- */
-
     function ensureDesmos() {
         if (window.Desmos) return Promise.resolve();
         if (window.__mp_desmos_loading_promise) return window.__mp_desmos_loading_promise;
@@ -436,7 +450,6 @@
         });
         return window.__mp_desmos_loading_promise;
     }
-
     function initDesmos() {
         try {
             const el = document.getElementById('mp-desmos-body-calc');
@@ -444,7 +457,6 @@
             // remove loading indicator if present (we'll also remove after creating instance)
             const preLoad = document.getElementById('mp-desmos-loading');
             if (preLoad) preLoad.remove();
-
             if (window.__mp_desmos_instance) {
                 try { if (typeof window.__mp_desmos_instance.update === 'function') window.__mp_desmos_instance.update(); } catch(_) {}
                 return;
@@ -452,11 +464,9 @@
             window.__mp_desmos_instance = Desmos && Desmos.ScientificCalculator
                 ? Desmos.ScientificCalculator(el, { keypad: true })
                 : null;
-
             // Remove loading placeholder if it still exists
             const ld = document.getElementById('mp-desmos-loading');
             if (ld) ld.remove();
-
             if (!window.__mp_desmos_instance) {
                 console.error('Desmos object not available or API changed');
                 const errNotice = document.createElement('div');
@@ -477,7 +487,6 @@
             }
         }
     }
-
     function openCalculator() {
         const existingPanel = document.getElementById('mp-desmos-panel');
         if (existingPanel) {
@@ -485,7 +494,6 @@
             existingPanel.style.zIndex = 2147483648;
             return;
         }
-
         const panel = document.createElement('div');
         panel.id = 'mp-desmos-panel';
         panel.style.cssText = `
@@ -495,7 +503,6 @@
             box-shadow:0 8px 30px rgba(0,0,0,.4);font-family:Arial,Helvetica,sans-serif;
             box-sizing:border-box;user-select:none;overflow:hidden;
         `;
-
         const header = document.createElement('div');
         header.style.cssText = `
             display:flex;align-items:center;justify-content:space-between;
@@ -504,20 +511,17 @@
         `;
         header.innerHTML = `<span style="pointer-events:none;">Calculator</span>`;
         panel.appendChild(header);
-
         const body = document.createElement('div');
         body.id = 'mp-desmos-body';
         body.style.cssText = `
             width:100%;height:calc(100% - 36px);
             margin:0;padding:0;box-sizing:border-box;background:transparent;
         `;
-
         const desmosContainer = document.createElement('div');
         desmosContainer.id = 'mp-desmos-body-calc';
         desmosContainer.style.cssText = `
             width:100%;height:100%;border-radius:6px;overflow:hidden;display:flex;align-items:stretch;
         `;
-
         // TEMP loading notice (will be removed when Desmos initialised or on error)
         const loadingNotice = document.createElement('div');
         loadingNotice.id = 'mp-desmos-loading';
@@ -528,11 +532,9 @@
         `;
         loadingNotice.textContent = 'Loading... ⏳';
         desmosContainer.appendChild(loadingNotice);
-
         body.appendChild(desmosContainer);
         panel.appendChild(body);
         document.body.appendChild(panel);
-
         (function simpleDrag() {
             let dragging = false, ox = 0, oy = 0;
             const move = e => {
@@ -540,7 +542,7 @@
                 const y = (e.clientY !== undefined) ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY);
                 if (!dragging || x == null) return;
                 panel.style.left = (x - ox) + 'px';
-                panel.style.top  = (y - oy) + 'px';
+                panel.style.top = (y - oy) + 'px';
                 panel.style.right = '';
             };
             const up = () => {
@@ -573,7 +575,6 @@
                 e.preventDefault();
             });
         })();
-
         // load & init desmos; on failure replace loading with error notice
         ensureDesmos().then(initDesmos).catch(err => {
             console.error('Failed to load Desmos calculator:', err);
@@ -587,10 +588,8 @@
                 bodyEl.appendChild(errNotice);
             }
         });
-
         panel.addEventListener('mousedown', () => { panel.style.zIndex = 2147483648; });
     }
-
     function destroyCalculatorPanel() {
         try {
             const ld = document.getElementById('mp-desmos-loading');
@@ -608,7 +607,6 @@
         window.__mp_desmos_instance = null;
         console.log('Calculator panel removed');
     }
-
     function toggleCalculator() {
         if (shouldDebounceToggle()) return console.log('toggleCalculator: debounced');
         const existing = document.getElementById('mp-desmos-panel');
@@ -620,13 +618,11 @@
             showStatus('Calculator - ON', '#10b981');
         }
     }
-
     /* -------------------------
        AI Chat (added) — toggle via Alt+5
        - openOpenAI(), setupChat(), destroyChatPanel(), toggleOpenAI()
        - NO close button in header; toggled only via Alt+5
        ------------------------- */
-
     function openOpenAI() {
         const existingPanel = document.getElementById('mp-aichat-panel');
         if (existingPanel) {
@@ -634,7 +630,6 @@
             existingPanel.style.zIndex = 2147483648;
             return;
         }
-
         const panel = document.createElement('div');
         panel.id = 'mp-aichat-panel';
         panel.style.cssText = `
@@ -643,7 +638,6 @@
             box-shadow:0 8px 30px rgba(0,0,0,.35);font-family:Arial,Helvetica,sans-serif;
             box-sizing:border-box;user-select:none;padding:0;overflow:hidden;
         `;
-
         const header = document.createElement('div');
         header.style.cssText = `
             display:flex;align-items:center;justify-content:space-between;
@@ -653,26 +647,22 @@
         // NO close button here (per request)
         header.innerHTML = `<span style="pointer-events:none;">AI Chat</span>`;
         panel.appendChild(header);
-
         const chatContainer = document.createElement('div');
         chatContainer.style.cssText = `
             width:100%;height:calc(100% - 42px);display:flex;flex-direction:column;
             background:#f2f3f5;
         `;
-
         const messagesArea = document.createElement('div');
         messagesArea.id = 'mp-chat-messages';
         messagesArea.style.cssText = `
             flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;
             overflow-y:auto;font-family:"Inter",Arial,sans-serif;
         `;
-
         const inputArea = document.createElement('div');
         inputArea.style.cssText = `
             display:flex;gap:8px;padding:10px;border-top:1px solid #e0e0e0;
             background:#fff;align-items:flex-end;
         `;
-
         const textarea = document.createElement('textarea');
         textarea.id = 'mp-chat-input';
         textarea.placeholder = 'Type a message';
@@ -681,10 +671,8 @@
             border:1px solid #ccc;resize:none;font-size:14px;outline:none;
             line-height:1.3;font-family:inherit;
         `;
-
         const controls = document.createElement('div');
         controls.style.cssText = 'display:flex;flex-direction:column;gap:8px;align-items:flex-end;justify-content:space-between;';
-
         const sendBtn = document.createElement('button');
         sendBtn.id = 'mp-send-btn';
         sendBtn.textContent = 'Send';
@@ -692,7 +680,6 @@
             background:#0078ff;color:#fff;border:none;border-radius:8px;
             padding:10px 14px;cursor:pointer;font-weight:600;font-family:inherit;
         `;
-
         controls.appendChild(sendBtn);
         inputArea.appendChild(textarea);
         inputArea.appendChild(controls);
@@ -700,18 +687,12 @@
         chatContainer.appendChild(inputArea);
         panel.appendChild(chatContainer);
         document.body.appendChild(panel);
-
         setupChat(messagesArea, textarea, sendBtn);
-
         draggable(panel, header);
-
         // No close button: panel is closed only via toggleOpenAI()
-
         panel.addEventListener('mousedown', () => { panel.style.zIndex = 2147483648; });
-
         textarea.focus();
     }
-
     function destroyChatPanel() {
         try {
             const panel = document.getElementById('mp-aichat-panel');
@@ -725,7 +706,6 @@
         } catch(_) {}
         console.log('AI Chat panel removed');
     }
-
     function toggleOpenAI() {
         if (shouldDebounceToggle()) return console.log('toggleOpenAI: debounced');
         const existing = document.getElementById('mp-aichat-panel');
@@ -737,17 +717,14 @@
             showStatus('AI Chat - ON', '#10b981');
         }
     }
-
     function setupChat(messagesArea, input, sendBtn) {
         // NOTE: this uses the key and endpoint the user provided in the snippet.
         const API_KEY = 'csk-nhykr5xjwe495twcvtx383wh3vnyj2n4x9nr26k56mje6jxr';
         const ENDPOINT = 'https://api.cerebras.ai/v1/chat/completions';
         const MODEL = 'gpt-oss-120b';
         const SYSTEM_MESSAGE = "You are a friendly chatbot called MP Helper. You help with maths problems. MP stands for Math Pathways, as this is the program you are in. NEVER respond with math displaystyles or markdown, ONLY respond with plaintext. NEVER use displaystyle or math format or markdown. You are a part of MP Tools, a tool system for Math Pathways. For example, INSTEAD of doing this: (1 div 1 = 1), do THIS: 1/1 = 1 NEVER use math formatter. So, NEVER use LaTeX-style display math, instead always write math in plain text. Use emojis, NO MARKDOWN, and be excited and ready to help. Keep your responses short except if the user asks a maths problem walk them through it step by step.";
-
         let messages = [];
         let currentController = null;
-
         function makeBubble(text, isUser) {
             const bubble = document.createElement('div');
             bubble.style.cssText = `
@@ -761,11 +738,9 @@
             bubble.textContent = text;
             return bubble;
         }
-
         function scrollToBottom() {
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
-
         function renderMessages() {
             messagesArea.innerHTML = '';
             messages.forEach(msg => {
@@ -773,39 +748,32 @@
             });
             scrollToBottom();
         }
-
         async function sendMessage() {
             const text = input.value.trim().replace(/\u00a0/g, ' ');
             if (!text) return;
-
             const userMsg = { role: 'user', content: text };
             messages.push(userMsg);
             messagesArea.appendChild(makeBubble(text, true));
             input.value = '';
             scrollToBottom();
-
             await streamAssistantResponse();
         }
-
         async function streamAssistantResponse() {
             const payloadMessages = [
                 { role: 'system', content: SYSTEM_MESSAGE },
                 ...messages
             ];
-
             const assistantMsg = { role: 'assistant', content: '' };
             messages.push(assistantMsg);
             const assistantBubble = makeBubble('', false);
             messagesArea.appendChild(assistantBubble);
             scrollToBottom();
-
             if (currentController) {
                 try { currentController.abort(); } catch(_) {}
             }
             const controller = new AbortController();
             currentController = controller;
             window.__mp_chat_controller = controller;
-
             try {
                 const response = await fetch(ENDPOINT, {
                     method: 'POST',
@@ -823,27 +791,21 @@
                     }),
                     signal: controller.signal
                 });
-
                 if (!response.ok) {
                     throw new Error(`API error: ${response.status}`);
                 }
-
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
-
                 while (true) {
                     const { value, done } = await reader.read();
                     if (done) break;
-
                     buffer += decoder.decode(value, { stream: true });
                     const lines = buffer.split('\n');
                     buffer = lines.pop() || '';
-
                     for (const line of lines) {
                         const trimmed = line.trim();
                         if (!trimmed || trimmed === 'data: [DONE]') continue;
-
                         if (trimmed.startsWith('data: ')) {
                             try {
                                 const data = JSON.parse(trimmed.slice(6));
@@ -858,11 +820,9 @@
                         }
                     }
                 }
-
                 currentController = null;
                 assistantMsg.content = assistantMsg.content.trim();
                 renderMessages();
-
             } catch (err) {
                 if (err.name === 'AbortError') {
                     currentController = null;
@@ -874,9 +834,7 @@
                 }
             }
         }
-
         sendBtn.onclick = sendMessage;
-
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -884,7 +842,6 @@
             }
         });
     }
-
     /* -------------------------
        Keyboard Shortcuts Setup (improved)
        ------------------------- */
@@ -894,9 +851,7 @@
             return;
         }
         window.__mpToolsKeyboardSetup = true;
-
         window.__mpToolsLastKeyAt = window.__mpToolsLastKeyAt || 0;
-
         document.addEventListener('keydown', function(e) {
             const now = Date.now();
             if (now - window.__mpToolsLastKeyAt < 150) return;
@@ -906,7 +861,6 @@
             const isDigit4 = e.code === 'Digit4' || e.key === '4';
             const isDigit5 = e.code === 'Digit5' || e.key === '5';
             const isDigit6 = e.code === 'Digit6' || e.key === '6';
-
             if (e.altKey && isDigit6) {
                 e.preventDefault();
                 window.__mpToolsLastKeyAt = now;
@@ -940,7 +894,6 @@
             }
         }, true);
     }
-
     /* -------------------------
        Initialize on load
        ------------------------- */
@@ -953,10 +906,8 @@
         if (window.__mpToolsState.removeAnnoying) enableremoveAnnoying();
         console.log('MP-Tools activated - Use Alt+1, Alt+2, Alt+3 to toggle features; Alt+4 toggles Calculator; Alt+5 toggles AI Chat; Alt+6 for progress theme (single press cycles, double press opens menu)');
     }
-
     // Run initialization
     initialize();
-
     /* -------------------------
        Minimal helpers (UI used by other code)
        ------------------------- */
@@ -1000,5 +951,4 @@
             e.preventDefault();
         });
     }
-
 })();
