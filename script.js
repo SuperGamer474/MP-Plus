@@ -46,11 +46,11 @@
         baldock:     { gradient: 'linear-gradient(limegreen, green)',         text: 'BALDOCK' },
         warren:      { gradient: 'linear-gradient(skyblue, blue)',            text: 'WARREN' },
         white:       { gradient: 'linear-gradient(yellow, orange)',           text: 'WHITE' },
-        christmas:       { gradient: 'linear-gradient(white, white, green, red, red)',           text: 'CHRISTMAS' },
-        halloween:       { gradient: 'linear-gradient(white, orange, black)',           text: 'HALLOWEEN' },
-        easter:       { gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',           text: 'EASTER' },
-        patricks:       { gradient: 'linear-gradient(green, darkgreen, orange)',           text: 'ST PATRICKS DAY' },
-        ocean:       { gradient: 'linear-gradient(#00BCBC, lightblue, lightblue, lightyellow, lightyellow)',           text: 'BLUES PEACE' },
+        christmas:       { gradient: 'linear-gradient(white, white, green, red, red)',           text: '🎅 🎄 🎁 ✨☃︎🎅🎄❄️☃️🎁🦌⋆𐙚❅🦌*°⋆❆.⛸️🎄' },
+        halloween:       { gradient: 'linear-gradient(white, orange, black)',           text: '☠️ 🍬 🏚️ 👻 🫣 👺 💀☠️ 🍬 🏚️ 👻 🫣 👺 💀 ' },
+        easter:       { gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',           text: '🐤 🐰 🐥 🎁 🌈 🦋 🥚🐤 🐰 🐥 🎁 🌈 🦋 🥚' },
+        patricks:       { gradient: 'linear-gradient(green, darkgreen, orange)',           text: '🫶🍀🍦💚🤞💰🌈🔐🤍 ☘️🌈💰🍀✨' },
+        ocean:       { gradient: 'linear-gradient(#00BCBC, lightblue, lightblue, lightyellow, lightyellow)',           text: '˖°𓇼🌊⋆🐚🫧 ·｡🪼⋆｡𖦹°🫧⛱️🏝️🏄🌴🍹🌞 ' },
     };
 
     function applyThemeToBar(bar, theme) {
