@@ -114,7 +114,7 @@
                 <div style="
                     display: inline-block;
                     white-space: nowrap;
-                    animation: scroll 50s linear infinite;
+                    animation: scroll 100s linear infinite;
                 ">${emojiLine}</div>
                 <style>
                     @keyframes scroll {
