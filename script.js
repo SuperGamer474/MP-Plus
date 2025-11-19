@@ -62,27 +62,31 @@
         },
         christmas: {
             gradient: 'linear-gradient(white, white, green, red, red)',
-            emojis: ['🎅','🎄','🎁','✨','☃️','❄️','🦌','⛄','🔔', 'CHRISTMAS']
+            emojis: ['🎅','🎄','🎁','☃️', 'CHRISTMAS']
         },
         halloween: {
             gradient: 'linear-gradient(white, orange, black)',
-            emojis: ['☠️','🍬','🏚️','👻','🫣','👺','💀','🦇','🎃', 'HALLOWEEN']
+            emojis: ['🍬','👻','👺','🎃', 'HALLOWEEN']
         },
         easter: {
             gradient: 'linear-gradient(#FFD1DC, #E3E4FA, #AAF0D1)',
-            emojis: ['🐤','🐰','🐥','🎁','🌈','🦋','🥚','🌷','🐣', 'EASTER']
+            emojis: ['🐤','🐰','🥚','🐣', 'EASTER']
         },
         patricks: {
             gradient: 'linear-gradient(green, darkgreen, orange)',
-            emojis: ['🍀','💚','🤞','💰','🌈','☘️','🪙','🍻', 'ST PATRICKS DAY']
+            emojis: ['🍀','💰','☘️','🪙', 'ST PATRICKS DAY']
         },
         ocean: {
             gradient: 'linear-gradient(#00BCBC, lightblue, lightblue, lightyellow, lightyellow)',
-            emojis: ['𓇼','🌊','🐚','🫧','🪼','⛱️','🏝️','🏄','🌴','🍹','🌞', 'OCEAN VIBES']
+            emojis: ['🌊','⛱️','🏝️','🏄','OCEAN VIBES']
         },
          space: {
             gradient: 'linear-gradient(black, white, black, lightgray, black, black, gray, black, black, white, black, black, gray, black, black)',
-            emojis: ['✦', '⭑', '🛸', '˚', '☆', '⋆', '🛰', '⭑', '🌎', '✦', '✦', '⭑', '🛸', '⭑', 'SPACE']
+            emojis: ['✦', '☆', '🌎', '🛸', 'SPACE']
+        },
+         max: {
+            gradient: 'linear-gradient(red, orange, yellow, green, blue, purple, pink)',
+            emojis: ['🌈', '🦄', '💗', '🦋', 'MAX']
         }
        };
     function applyThemeToBar(bar, theme) {
