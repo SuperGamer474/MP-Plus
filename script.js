@@ -46,19 +46,19 @@
         default: { gradient: 'linear-gradient(rgb(104, 210, 255), rgb(63, 145, 225))', emojis: [] }, // no overlay emojis
         brimblecombe: {
             gradient: 'linear-gradient(red, maroon)',
-            emojis: ['', '', '', '', '']
+            emojis: ['🧡','🦌','🔴','📖']
         },
         baldock: {
             gradient: 'linear-gradient(limegreen, green)',
-            emojis: ['','','','','']
+            emojis: ['💚','⚓','🟢','📖']
         },
         warren: {
             gradient: 'linear-gradient(skyblue, blue)',
-            emojis: ['','','','']
+            emojis: ['💙','🪖','🔵','📖']
         },
         white: {
             gradient: 'linear-gradient(yellow, orange)',
-            emojis: ['','','','']
+            emojis: ['💛','🐦‍🔥','🟡','📖']
         },
         christmas: {
             gradient: 'linear-gradient(white, white, green, red, red)',
