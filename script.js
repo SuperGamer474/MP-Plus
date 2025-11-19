@@ -84,31 +84,31 @@
     function applyThemeToBar(bar, theme) {
         const width = bar.style.width || '0%';
 
-        // Base styles (same as before)
+        // Base styles
         bar.style.cssText = `
             width: ${width};
-            padding-top: 8px;
             background: ${theme.gradient};
-            text-align: center;
-            font-weight: bold;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
             font-size: 18px;
             line-height: 1;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            padding: 0;
         `;
 
         // Emoji overlay – repeat sequence to fill bar width
         if (theme.emojis && theme.emojis.length > 0) {
-            // Create a long repeated string so it always overflows the bar (looks full-width)
-            const repeatCount = Math.ceil(50 / theme.emojis.length) + 2; // plenty
-            const emojiLine = theme.emojis.join(' ').repeat(repeatCount);
+            // Aim for at least 100 emojis in the single segment to cover wide bars without gaps
+            const minEmojisInSingle = 100;
+            const repeatsNeeded = Math.ceil(minEmojisInSingle / theme.emojis.length);
+            const allEmojisSingle = Array.from({length: repeatsNeeded}, () => theme.emojis).flat();
+            const emojiLine = [...allEmojisSingle, ...allEmojisSingle].join(' ');
 
             bar.innerHTML = `
                 <div style="
-                    display: block;
-                    width: 100%;
-                    overflow: hidden;
+                    display: inline-block;
                     white-space: nowrap;
                     animation: scroll 25s linear infinite;
                 ">${emojiLine}</div>
