@@ -1,4 +1,4 @@
-name: Build Windows Installer
+name: Build Windows Installer and Release
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
       - "App/**"
 
 jobs:
-  build:
+  build-and-release:
     runs-on: windows-latest
 
     steps:
@@ -27,23 +27,26 @@ jobs:
         working-directory: App
         run: npx electron-builder --win nsis
 
-      - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          echo "VERSION=$(node -p \"require('./App/package.json').version\")" >> $GITHUB_ENV
+
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
         with:
-          name: mpplus-windows-installer
-          path: App/dist/*
-          
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: v${{ env.VERSION }}
+          release_name: v${{ env.VERSION }}
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload installer
-        uses: softprops/action-gh-release@v1
+      - name: Upload installer to release
+        uses: actions/upload-release-asset@v1
         with:
-          files: App/dist/mp-plus\ Setup.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: App/dist/MP+\ Setup\ ${{ env.VERSION }}.exe
+          asset_name: MP+ Installer.exe
+          asset_content_type: application/octet-stream
