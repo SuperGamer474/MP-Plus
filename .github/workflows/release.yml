@@ -38,17 +38,39 @@ jobs:
           "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Output "Version: $version"
 
-      - name: Find generated installer
+      - name: Find and rename installer
         id: find_installer
         shell: pwsh
         run: |
+          # Find the installer file
           $files = Get-ChildItem -Path "App/dist" -Filter "*.exe"
           if ($files.Count -eq 0) { throw "No installer found in App/dist" }
           $installer = $files | Where-Object { $_.Name -match "Setup" } | Select-Object -First 1
           if (-not $installer) { $installer = $files[0] }
-          Write-Output "Installer found: $($installer.FullName)"
-          "INSTALLER_PATH=$($installer.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "INSTALLER_NAME=$($installer.Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
+          # Create a simpler filename without spaces or special characters
+          $newName = "MP-Plus-Setup-${{ env.VERSION }}.exe"
+          $newPath = Join-Path "App/dist" $newName
+          
+          # Copy the file with the new name
+          Copy-Item -Path $installer.FullName -Destination $newPath
+          
+          Write-Output "Original installer: $($installer.Name)"
+          Write-Output "Renamed installer: $newName"
+          "INSTALLER_PATH=$newPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "INSTALLER_NAME=$newName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify installer exists
+        shell: pwsh
+        run: |
+          if (Test-Path "${{ env.INSTALLER_PATH }}") {
+            Write-Output "✅ Installer exists at: ${{ env.INSTALLER_PATH }}"
+            Get-ChildItem "App/dist" | ForEach-Object { Write-Output "Found: $($_.Name)" }
+          } else {
+            Write-Output "❌ Installer not found at: ${{ env.INSTALLER_PATH }}"
+            Get-ChildItem "App/dist" -Recurse | ForEach-Object { Write-Output "Available: $($_.FullName)" }
+            exit 1
+          }
 
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v1
@@ -57,6 +79,7 @@ jobs:
           name: MP+ v${{ env.VERSION }}
           draft: false
           prerelease: false
-          files: ${{ env.INSTALLER_PATH }}
+          files: |
+            ${{ env.INSTALLER_PATH }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
