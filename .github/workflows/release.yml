@@ -3,8 +3,8 @@ name: Build Windows Installer
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    paths:
+      - "App/**"
 
 jobs:
   build:
